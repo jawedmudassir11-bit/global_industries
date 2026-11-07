@@ -1,0 +1,6 @@
+{
+  "name": "Global Industries Site Management",
+  "description": "Streamlined, mobile-first construction site attendance, DPR, inventory, and payroll portal for Global Industries.",
+  "requestFramePermissions": ["microphone", "camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
