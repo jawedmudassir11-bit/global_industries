@@ -9,7 +9,8 @@ import {
   CheckSquare,
   ClipboardList,
   Table,
-  FileText
+  FileText,
+  Box
 } from 'lucide-react';
 import {
   SiteNode,
@@ -36,13 +37,13 @@ import { AttendanceTab } from './components/AttendanceTab';
 import { DprSiteTab } from './components/DprSiteTab';
 import { RegisterTab } from './components/RegisterTab';
 import { ReportsSlipsTab } from './components/ReportsSlipsTab';
+import { Site3DView } from './components/Site3DView';
 import {
   PinLoginModal,
   WorkerFormModal,
   WorkerProfileModal,
   WorkerTransferModal,
-  StockThresholdModal,
-  UiImprovementGuideModal
+  StockThresholdModal
 } from './components/ModalsAndDrawers';
 import {
   GlobalIndustriesLetterhead,
@@ -55,7 +56,7 @@ import {
 } from './components/ProfileAnalyticsDrawer';
 import { OfflineQueueBanner } from './components/PwaAndOfflineBar';
 
-type ActiveTab = 'attendance' | 'dpr' | 'register' | 'reports';
+type ActiveTab = 'attendance' | 'dpr' | 'register' | 'reports' | 'bim3d';
 
 export default function App() {
   const now = useMemo(() => new Date(), []);
@@ -142,7 +143,6 @@ export default function App() {
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [transferTargetWorker, setTransferTargetWorker] = useState<WorkerProfile | null>(null);
   const [isStockThresholdModalOpen, setIsStockThresholdModalOpen] = useState(false);
-  const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
   const [barrelRoll, setBarrelRoll] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'local'>('synced');
@@ -1213,17 +1213,6 @@ export default function App() {
                 />
               </div>
 
-              {/* UI Improvement Guide Button */}
-              <button
-                type="button"
-                onClick={() => setIsGuideModalOpen(true)}
-                aria-label="Open UI Improvement Guide"
-                className="hidden lg:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-bold bg-white/10 hover:bg-white/20 text-emerald-300 border border-white/15 transition-colors cursor-pointer"
-                title="See what was improved in this UI"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>UI Guide</span>
-              </button>
 
               {/* Dark / Light Mode Toggle */}
               <button
@@ -1348,7 +1337,8 @@ export default function App() {
             { id: 'attendance', label: 'Daily Attendance', icon: CheckSquare },
             { id: 'dpr', label: 'DPR & Site Stock', icon: ClipboardList },
             { id: 'register', label: 'Monthly Register & Staff', icon: Table },
-            { id: 'reports', label: 'Wage Slips, Reports & Tools', icon: FileText }
+            { id: 'reports', label: 'Wage Slips, Reports & Tools', icon: FileText },
+            { id: 'bim3d', label: '3D BIM Site (Three.js)', icon: Box }
           ].map(tab => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -1418,6 +1408,8 @@ export default function App() {
             monthKey={monthKey}
             userRole={userRole}
             userName={userName || userRole.toUpperCase()}
+            siteName={currentSite?.name || 'Barsoi'}
+            subgroupName={currentSubgroup?.name || 'Madan'}
             isMasterRollup={isMasterRollup}
             onUpdateDPR={handleUpdateDPR}
             onPhotoUpload={handlePhotoUploadInput}
@@ -1465,18 +1457,28 @@ export default function App() {
             onToast={showToast}
           />
         )}
+
+        {activeTab === 'bim3d' && (
+          <Site3DView
+            siteName={currentSite?.name || 'Barsoi'}
+            subgroupName={currentSubgroup?.name || 'Madan'}
+            dprWeather={appState.dpr[dateKey]?.weather || 'Sunny / Clear'}
+            downtimeReason={appState.dpr[dateKey]?.downtimeReason || 'None'}
+          />
+        )}
       </main>
 
-      {/* MOBILE THUMB-ZONE BOTTOM NAVIGATION BAR (4 clear tabs, <= 56px height) */}
+      {/* MOBILE THUMB-ZONE BOTTOM NAVIGATION BAR (5 clear tabs, <= 56px height) */}
       <nav
         aria-label="Mobile Bottom Navigation"
-        className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 grid grid-cols-4 h-14 no-print"
+        className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 grid grid-cols-5 h-14 no-print"
       >
         {[
           { id: 'attendance', label: 'Attendance', icon: CheckSquare },
           { id: 'dpr', label: 'DPR & Stock', icon: ClipboardList },
           { id: 'register', label: 'Register', icon: Table },
-          { id: 'reports', label: 'Slips & Tools', icon: FileText }
+          { id: 'reports', label: 'Slips & Tools', icon: FileText },
+          { id: 'bim3d', label: '3D BIM', icon: Box }
         ].map(tab => {
           const Icon = tab.icon;
           const active = activeTab === tab.id;
@@ -1537,7 +1539,6 @@ export default function App() {
           logActivity('Locked portal access');
           showToast('Locked to Viewer mode', 'info');
         }}
-        onOpenGuideModal={() => setIsGuideModalOpen(true)}
         onForceSync={() => {
           flushOfflineQueue();
           showToast('Force Synced with Cloud', 'success');
@@ -1617,12 +1618,6 @@ export default function App() {
         activeMaterialNames={activeMaterialNames}
         onClose={() => setIsStockThresholdModalOpen(false)}
         onSaveThresholds={handleSaveStockThresholds}
-      />
-
-      {/* UI IMPROVEMENT GUIDE MODAL */}
-      <UiImprovementGuideModal
-        isOpen={isGuideModalOpen}
-        onClose={() => setIsGuideModalOpen(false)}
       />
     </div>
   );

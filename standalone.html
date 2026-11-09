@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Global Industries | Official Site Management Portal</title>
+  <meta name="description" content="Global Industries Daily Site Attendance, DPR, Weather Downtime, 3D BIM Site & Wage Management" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              navy: '#0a192f',
+              gold: '#c59b27',
+              emerald: '#059669',
+              green: '#2e7d32'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <!-- SheetJS & jsPDF for Excel & PDF Export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+  <!-- Three.js & OrbitControls (Global UMD scripts for 100% file:/// desktop compatibility) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <style>
+    body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
+    code, pre, .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+    @keyframes giPopIn {
+      0% { opacity: 0; transform: translate3d(0, 16px, 0) scale(0.92); }
+      100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+    }
+    .gi-intro-pop {
+      animation: giPopIn 500ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      will-change: transform, opacity;
+    }
+    .gi-gpu-glide {
+      transition-property: transform, opacity;
+      transition-duration: 680ms;
+      transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: transform, opacity;
+      backface-visibility: hidden;
+    }
+    @keyframes googleBarrelRoll {
+      0% { transform: rotate(0deg) scale(1); }
+      50% { transform: rotate(180deg) scale(0.7); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+    .barrel-roll {
+      animation: googleBarrelRoll 1.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    @media print {
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen">
+
+  <!-- ================= 60FPS CENTER-TO-HEADER INTRO GLIDE ================= -->
+  <div id="introCurtain" onclick="skipIntro()" title="Tap anywhere to skip intro" class="fixed inset-0 z-50 flex flex-col items-center justify-center cursor-pointer select-none overflow-hidden no-print">
+    <!-- Backdrop curtain -->
+    <div id="introBackdrop" class="absolute inset-0 bg-white dark:bg-slate-950 gi-gpu-glide"></div>
+
+    <!-- Morphing Container -->
+    <div class="relative z-10 flex flex-col items-center">
+      <div id="introLogoWrapper" class="gi-gpu-glide origin-center" style="transform: translate3d(0,0,0) scale(1.35);">
+        <div class="gi-intro-pop">
+          <!-- Exact Golden GI Globe SVG Mark -->
+          <div class="flex items-center gap-3 select-none">
+            <div class="w-13 h-13 shrink-0 drop-shadow-sm">
+              <svg viewBox="0 0 100 100" width="56" height="56" aria-label="Global Industries GI Globe Logo">
+                <defs>
+                  <linearGradient id="globeGrad_intro" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#D49B4B" />
+                    <stop offset="55%" stop-color="#B87B28" />
+                    <stop offset="100%" stop-color="#8A5612" />
+                  </linearGradient>
+                  <clipPath id="globeClip_intro">
+                    <circle cx="50" cy="50" r="45" />
+                  </clipPath>
+                </defs>
+                <g clip-path="url(#globeClip_intro)">
+                  <ellipse cx="50" cy="50" rx="34" ry="45" stroke="url(#globeGrad_intro)" stroke-width="2.6" fill="none" />
+                  <ellipse cx="50" cy="50" rx="23" ry="45" stroke="url(#globeGrad_intro)" stroke-width="2.5" fill="none" />
+                  <ellipse cx="50" cy="50" rx="12" ry="45" stroke="url(#globeGrad_intro)" stroke-width="2.4" fill="none" />
+                  <line x1="50" y1="5" x2="50" y2="95" stroke="url(#globeGrad_intro)" stroke-width="2.5" />
+                  <path d="M 5,19 Q 50,26 95,19" stroke="url(#globeGrad_intro)" stroke-width="2.5" fill="none" />
+                  <path d="M 5,30 Q 50,35 95,30" stroke="url(#globeGrad_intro)" stroke-width="2.5" fill="none" />
+                  <path d="M 5,70 Q 50,65 95,70" stroke="url(#globeGrad_intro)" stroke-width="2.5" fill="none" />
+                  <path d="M 5,81 Q 50,74 95,81" stroke="url(#globeGrad_intro)" stroke-width="2.5" fill="none" />
+                  <path d="M 32,6 Q 50,12 68,6 Z" fill="url(#globeGrad_intro)" />
+                  <path d="M 32,94 Q 50,88 68,94 Z" fill="url(#globeGrad_intro)" />
+                  <rect x="4" y="39" width="92" height="22" fill="url(#globeGrad_intro)" />
+                </g>
+                <circle cx="50" cy="50" r="45" stroke="url(#globeGrad_intro)" stroke-width="3.5" fill="none" />
+                <text x="50" y="55.5" fill="#FFFFFF" font-family="'Arial Black', Arial, sans-serif" font-size="16.5" font-weight="900" letter-spacing="3.5" text-anchor="middle">GI</text>
+              </svg>
+            </div>
+            <div class="flex items-baseline gap-2">
+              <span style="font-family: 'Brush Script MT', 'Dancing Script', cursive; color: #4CAF50;" class="text-4xl leading-none font-bold">Global</span>
+              <span style="font-family: 'Times New Roman', Times, serif; color: #6da35e;" class="text-2xl tracking-wide font-normal">Industries</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Intro Subtitle & Real Firebase Sync Pill -->
+      <div id="introPillContainer" class="mt-6 flex flex-col items-center gap-3 text-center px-4 gi-gpu-glide">
+        <p class="text-xs text-slate-600 dark:text-slate-400 font-medium max-w-md">
+          <strong class="font-bold text-slate-900 dark:text-white">Regd. Office :</strong> Thokrichak, P.O. Garahra, Via Barauni, Dist. Begusarai, Bihar- 851 126
+        </p>
+
+        <!-- Live Sync Pill -->
+        <div id="introPill" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold border bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 shadow-sm transition-all duration-300">
+          <span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+          <span id="introPillText">Syncing Site Data...</span>
+        </div>
+        <span class="text-[10px] text-slate-400">(Tap anywhere to skip)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TOP LETTERHEAD & LOGO ================= -->
+  <header class="bg-white dark:bg-slate-900 border-b-[3px] border-[#8B5A2B] px-3 sm:px-6 py-2.5 transition-colors no-print sticky top-0 z-40 shadow-xs">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+      
+      <!-- Target Logo Destination for Center-to-Header Morph -->
+      <div id="headerLogoTarget" class="inline-flex items-center origin-left">
+        <div class="flex items-center gap-3 select-none">
+          <div class="w-11 h-11 shrink-0 drop-shadow-xs">
+            <svg viewBox="0 0 100 100" width="44" height="44" aria-label="Global Industries GI Globe Logo">
+              <defs>
+                <linearGradient id="globeGrad_hdr" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#D49B4B" />
+                  <stop offset="55%" stop-color="#B87B28" />
+                  <stop offset="100%" stop-color="#8A5612" />
+                </linearGradient>
+                <clipPath id="globeClip_hdr">
+                  <circle cx="50" cy="50" r="45" />
+                </clipPath>
+              </defs>
+              <g clip-path="url(#globeClip_hdr)">
+                <ellipse cx="50" cy="50" rx="34" ry="45" stroke="url(#globeGrad_hdr)" stroke-width="2.6" fill="none" />
+                <ellipse cx="50" cy="50" rx="23" ry="45" stroke="url(#globeGrad_hdr)" stroke-width="2.5" fill="none" />
+                <ellipse cx="50" cy="50" rx="12" ry="45" stroke="url(#globeGrad_hdr)" stroke-width="2.4" fill="none" />
+                <line x1="50" y1="5" x2="50" y2="95" stroke="url(#globeGrad_hdr)" stroke-width="2.5" />
+                <path d="M 5,19 Q 50,26 95,19" stroke="url(#globeGrad_hdr)" stroke-width="2.5" fill="none" />
+                <path d="M 5,30 Q 50,35 95,30" stroke="url(#globeGrad_hdr)" stroke-width="2.5" fill="none" />
+                <path d="M 5,70 Q 50,65 95,70" stroke="url(#globeGrad_hdr)" stroke-width="2.5" fill="none" />
+                <path d="M 5,81 Q 50,74 95,81" stroke="url(#globeGrad_hdr)" stroke-width="2.5" fill="none" />
+                <path d="M 32,6 Q 50,12 68,6 Z" fill="url(#globeGrad_hdr)" />
+                <path d="M 32,94 Q 50,88 68,94 Z" fill="url(#globeGrad_hdr)" />
+                <rect x="4" y="39" width="92" height="22" fill="url(#globeGrad_hdr)" />
+              </g>
+              <circle cx="50" cy="50" r="45" stroke="url(#globeGrad_hdr)" stroke-width="3.5" fill="none" />
+              <text x="50" y="55.5" fill="#FFFFFF" font-family="'Arial Black', Arial, sans-serif" font-size="16.5" font-weight="900" letter-spacing="3.5" text-anchor="middle">GI</text>
+            </svg>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span style="font-family: 'Brush Script MT', 'Dancing Script', cursive; color: #4CAF50;" class="text-3xl leading-none font-bold">Global</span>
+            <span style="font-family: 'Times New Roman', Times, serif; color: #6da35e;" class="text-xl tracking-wide font-normal">Industries</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Status & Controls Bar -->
+      <div class="flex items-center flex-wrap gap-2 text-xs">
+        <!-- Site Dropdown -->
+        <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 font-semibold">
+          <span class="text-amber-600 font-bold uppercase text-[10px]">Site:</span>
+          <select id="siteSelect" onchange="switchSite(this.value)" class="bg-transparent font-bold text-slate-800 dark:text-white outline-none cursor-pointer">
+            <option value="Barsoi_Madan">🏢 Barsoi ➔ 📍 Madan (25 Workers)</option>
+            <option value="Barsoi_TAJUDDIN">🏢 Barsoi ➔ 📍 TAJUDDIN</option>
+          </select>
+        </div>
+
+        <!-- Sync Pill -->
+        <div id="syncBadge" class="flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 px-2.5 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 font-bold">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span id="syncText">🟢 Cloud Synced</span>
+        </div>
+
+        <!-- Date Picker -->
+        <input type="date" id="datePicker" onchange="changeDate(this.value)" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 font-bold outline-none cursor-pointer" />
+
+        <!-- Role Badge -->
+        <button id="roleBadge" onclick="openPinModal()" class="px-3 py-1.5 rounded-lg font-bold text-white bg-blue-600 hover:bg-blue-700 cursor-pointer shadow-xs transition">
+          SUPERVISOR
+        </button>
+
+        <!-- Dark Mode Toggle -->
+        <button onclick="toggleDarkMode()" class="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer text-sm" title="Toggle Light/Dark Mode">
+          🌓
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ================= KEY STATS BAR ================= -->
+  <main class="max-w-7xl mx-auto px-4 py-4 space-y-4">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div class="bg-white dark:bg-slate-800 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs">
+        <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Present Today</span>
+        <div class="flex items-baseline justify-between mt-1">
+          <div class="text-2xl font-black text-slate-800 dark:text-white" id="statPresent">25 <span class="text-xs font-normal text-slate-400">/ 25</span></div>
+          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400" id="statPresentPct">100%</span>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs">
+        <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Monthly Overtime</span>
+        <div class="flex items-baseline justify-between mt-1">
+          <div class="text-2xl font-black text-blue-600 dark:text-blue-400" id="statOT">12 <span class="text-xs font-normal">Hrs</span></div>
+          <span class="text-xs font-semibold text-slate-400">Current Mo.</span>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs">
+        <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Advances Paid</span>
+        <div class="flex items-baseline justify-between mt-1">
+          <div class="text-2xl font-black text-rose-600 dark:text-rose-400" id="statAdv">₹2,000</div>
+          <span class="text-xs font-semibold text-slate-400">Deductions</span>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs">
+        <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Net Wage Liability</span>
+        <div class="flex items-baseline justify-between mt-1">
+          <div class="text-2xl font-black text-emerald-600 dark:text-emerald-400" id="statWage">₹37,300</div>
+          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Payable</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= MAIN NAVIGATION TABS ================= -->
+    <div class="flex border-b border-slate-200 dark:border-slate-700 gap-2 overflow-x-auto pb-1">
+      <button onclick="switchTab('attendance')" id="tabBtn-attendance" class="px-4 py-2 text-xs font-bold border-b-2 border-emerald-600 text-emerald-700 dark:text-emerald-400 cursor-pointer shrink-0">
+        📋 Daily Attendance
+      </button>
+      <button onclick="switchTab('dpr')" id="tabBtn-dpr" class="px-4 py-2 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer shrink-0">
+        🏗️ DPR & Site Stock
+      </button>
+      <button onclick="switchTab('bim3d')" id="tabBtn-bim3d" class="px-4 py-2 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer shrink-0">
+        🌐 3D BIM Site (Three.js)
+      </button>
+      <button onclick="switchTab('register')" id="tabBtn-register" class="px-4 py-2 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer shrink-0">
+        📅 Monthly Register
+      </button>
+      <button onclick="switchTab('slips')" id="tabBtn-slips" class="px-4 py-2 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer shrink-0">
+        🧾 Wage Slips & Reports
+      </button>
+    </div>
+
+    <!-- ================= TAB 1: DAILY ATTENDANCE ================= -->
+    <section id="tab-attendance" class="space-y-3">
+      <!-- Search & Filters -->
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs">
+        <div class="relative flex-1">
+          <input type="text" id="workerSearch" oninput="filterWorkers()" placeholder="Search worker by name, trade or phone... (Press '/' to focus)" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg pl-9 pr-3 py-2 text-xs font-medium outline-none focus:border-emerald-500 text-slate-800 dark:text-white" />
+          <span class="absolute left-3 top-2.5 text-slate-400 text-xs">🔍</span>
+        </div>
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <button onclick="filterByTrade('ALL')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white cursor-pointer trade-btn">All Trades</button>
+          <button onclick="filterByTrade('Mason')" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 cursor-pointer trade-btn">Mason</button>
+          <button onclick="filterByTrade('Bar Bender')" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 cursor-pointer trade-btn">Bar Bender</button>
+          <button onclick="filterByTrade('Carpenter')" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 cursor-pointer trade-btn">Carpenter</button>
+          <button onclick="filterByTrade('Helper')" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 cursor-pointer trade-btn">Helper</button>
+          <button onclick="markAllPresent()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-xs ml-auto">
+            ✓ Mark All Present
+          </button>
+        </div>
+      </div>
+
+      <!-- Workers Cards Grid -->
+      <div id="workersList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+        <!-- Rendered dynamically by JavaScript -->
+      </div>
+    </section>
+
+    <!-- ================= TAB 2: DPR & SITE STOCK ================= -->
+    <section id="tab-dpr" class="hidden space-y-4">
+      <div class="flex items-center justify-between bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs">
+        <div class="font-bold text-sm text-slate-800 dark:text-white flex items-center gap-2">
+          <span>🏗️ Daily Progress & Site Stock</span>
+        </div>
+        <!-- 6:00 PM WhatsApp Summary Trigger -->
+        <button onclick="openWhatsAppExecutiveModal()" class="px-4 py-2 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2 shadow-xs cursor-pointer">
+          <span>💬 6:00 PM WhatsApp Summary</span>
+          <span class="bg-emerald-800 text-[10px] px-1.5 py-0.5 rounded font-black uppercase">1-Tap</span>
+        </button>
+      </div>
+
+      <!-- Weather & Downtime Tracker -->
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-2.5">
+          <div>
+            <h3 class="font-bold text-sm text-slate-800 dark:text-white flex items-center gap-1.5">
+              <span>🌦️ Weather & Downtime Delay Tracker</span>
+            </h3>
+            <p class="text-xs text-slate-500">Log rain stops, power cuts, or batching plant delays during slab pours</p>
+          </div>
+          <span id="dprDatePill" class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">7-11-2026</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Site Weather Condition</label>
+            <select id="weatherSelect" onchange="updateDprWeather(this.value)" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-xs font-semibold outline-none text-slate-800 dark:text-white">
+              <option value="Sunny / Clear">☀️ Sunny / Clear</option>
+              <option value="Cloudy">☁️ Cloudy</option>
+              <option value="Light Rain">🌧️ Light Rain</option>
+              <option value="Heavy Rain" selected>⛈️ Heavy Rain</option>
+              <option value="High Wind / Storm">🌪️ High Wind / Storm</option>
+            </select>
+          </div>
+
+          <!-- 1-Tap Quick Delay Tags -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">1-Tap Downtime Delay Reason</label>
+            <div class="flex flex-wrap gap-1.5">
+              <button onclick="setDowntimeTag('Rain Stopped Work')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-amber-500 text-white cursor-pointer hover:bg-amber-600">🌧️ Rain Stopped Work</button>
+              <button onclick="setDowntimeTag('Power Failure')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 cursor-pointer">⚡ Power Cut</button>
+              <button onclick="setDowntimeTag('Material Stockout')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 cursor-pointer">🚚 Material Delay</button>
+              <button onclick="setDowntimeTag('Machine Breakdown')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 cursor-pointer">🚜 Mixer Breakdown</button>
+              <button onclick="setDowntimeTag('None')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 cursor-pointer">☀️ No Delay</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hours Lost -->
+        <div class="pt-2 flex flex-wrap items-center gap-2">
+          <span class="text-xs font-bold text-slate-500">Hours Lost:</span>
+          <button onclick="setDowntimeHours(1)" class="px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-700 text-xs font-semibold cursor-pointer">1h</button>
+          <button onclick="setDowntimeHours(2)" class="px-2.5 py-1 rounded bg-amber-500 text-white text-xs font-bold cursor-pointer">2h</button>
+          <button onclick="setDowntimeHours(3.5)" class="px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-700 text-xs font-semibold cursor-pointer">Half Day (3.5h)</button>
+          <button onclick="setDowntimeHours(8)" class="px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-700 text-xs font-semibold cursor-pointer">Full Day (8h)</button>
+          <input type="text" id="downtimeNotes" placeholder="Impact note (e.g., column pour stopped at grid B2)" class="flex-1 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-2.5 py-1 text-xs outline-none text-slate-800 dark:text-white" />
+        </div>
+      </div>
+
+      <!-- Live Materials Stock Balance -->
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs">
+        <h3 class="font-bold text-sm text-slate-800 dark:text-white mb-2.5 flex items-center justify-between">
+          <span>📦 Site Materials Live Stock Balance</span>
+          <span class="text-xs font-normal text-slate-400">Barsoi Site</span>
+        </h3>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+          <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600">
+            <span class="text-slate-400 block font-medium">Cement (Ultratech)</span>
+            <span class="text-base font-bold text-slate-800 dark:text-white">140 Bags</span>
+          </div>
+          <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600">
+            <span class="text-slate-400 block font-medium">TMT Rebar 8mm</span>
+            <span class="text-base font-bold text-slate-800 dark:text-white">2,060 Kg</span>
+          </div>
+          <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600">
+            <span class="text-slate-400 block font-medium">TMT Rebar 16mm</span>
+            <span class="text-base font-bold text-slate-800 dark:text-white">1,000 Kg</span>
+          </div>
+          <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600">
+            <span class="text-slate-400 block font-medium">Binding Wire</span>
+            <span class="text-base font-bold text-slate-800 dark:text-white">50 Kg</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 3: 3D BIM SITE (THREE.JS) ================= -->
+    <section id="tab-bim3d" class="hidden space-y-3">
+      <div class="relative w-full h-[580px] rounded-2xl overflow-hidden bg-slate-900 border border-slate-700 shadow-xl">
+        <div id="threeContainer" class="w-full h-full cursor-grab active:cursor-grabbing"></div>
+
+        <!-- 3D Overlay Badge -->
+        <div class="absolute top-3.5 left-4 z-10 flex items-center gap-2 pointer-events-none">
+          <div class="bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-700 text-white shadow-lg pointer-events-auto flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs border border-amber-500/30">3D</span>
+            <span class="font-bold text-xs">Barsoi Site BIM · Live Digital Twin</span>
+          </div>
+        </div>
+
+        <!-- Unified Bottom Controls Dock -->
+        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 w-[95%] max-w-xl bg-slate-900/95 border border-slate-700 rounded-2xl shadow-2xl p-3 space-y-2.5 text-xs text-white">
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <!-- Camera Views -->
+            <div class="flex items-center gap-1 bg-slate-800 p-1 rounded-xl">
+              <button onclick="set3DCamera('overview')" class="px-2.5 py-1 rounded-lg font-semibold bg-blue-600 text-white cursor-pointer cam-btn">Full Site</button>
+              <button onclick="set3DCamera('slab')" class="px-2.5 py-1 rounded-lg font-semibold text-slate-400 hover:text-white cursor-pointer cam-btn">Roof Slab</button>
+              <button onclick="set3DCamera('crane')" class="px-2.5 py-1 rounded-lg font-semibold text-slate-400 hover:text-white cursor-pointer cam-btn">Tower Crane</button>
+              <button onclick="set3DCamera('stock')" class="px-2.5 py-1 rounded-lg font-semibold text-slate-400 hover:text-white cursor-pointer cam-btn">Stockyard</button>
+            </div>
+
+            <!-- Lighting Presets -->
+            <div class="flex items-center gap-1 bg-slate-800 p-1 rounded-xl">
+              <button onclick="set3DLighting('day')" class="p-1.5 rounded-lg bg-amber-500 text-white cursor-pointer light-btn" title="Daylight">☀️ Day</button>
+              <button onclick="set3DLighting('sunset')" class="p-1.5 rounded-lg text-slate-400 hover:text-white cursor-pointer light-btn" title="Golden Hour">🌇 Sunset</button>
+              <button onclick="set3DLighting('night')" class="p-1.5 rounded-lg text-slate-400 hover:text-white cursor-pointer light-btn" title="Night Floodlights">🌙 Night</button>
+            </div>
+          </div>
+
+          <!-- Exploded View -->
+          <div class="flex items-center gap-2 pt-1 border-t border-slate-800">
+            <span class="text-slate-400 text-[11px] font-semibold shrink-0">Explode Structural Layers:</span>
+            <input type="range" min="0" max="1" step="0.05" value="0" oninput="set3DExplode(this.value)" class="w-full accent-blue-500 h-1.5 bg-slate-800 rounded-lg cursor-pointer" />
+            <span id="explodeValText" class="text-[11px] font-mono text-slate-400 w-8 text-right">0%</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 4: MONTHLY REGISTER ================= -->
+    <section id="tab-register" class="hidden bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs space-y-3">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-bold text-sm text-slate-800 dark:text-white">📅 Monthly Muster Roll Calendar (11/2026)</h3>
+        <button onclick="exportToExcel()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer shadow-xs">
+          📊 Export to Excel (.xlsx)
+        </button>
+      </div>
+      <div class="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-xl">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-100 dark:bg-slate-700/70 font-semibold text-slate-600 dark:text-slate-300">
+            <tr>
+              <th class="p-2 border-b border-slate-200 dark:border-slate-700">#</th>
+              <th class="p-2 border-b border-slate-200 dark:border-slate-700">Worker Name</th>
+              <th class="p-2 border-b border-slate-200 dark:border-slate-700">Trade</th>
+              <th class="p-2 border-b border-slate-200 dark:border-slate-700">Daily Rate</th>
+              <th class="p-2 border-b border-slate-200 dark:border-slate-700 text-center">Duty Today</th>
+              <th class="p-2 border-b border-slate-200 dark:border-slate-700 text-center">OT Hrs</th>
+              <th class="p-2 border-b border-slate-200 dark:border-slate-700 text-right">Adv Ded.</th>
+            </tr>
+          </thead>
+          <tbody id="registerTableBody" class="divide-y divide-slate-100 dark:divide-slate-700/60 font-medium"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ================= TAB 5: WAGE SLIPS ================= -->
+    <section id="tab-slips" class="hidden bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs space-y-3">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-bold text-sm text-slate-800 dark:text-white">🧾 Bilingual (हिंदी / English) Wage Slips</h3>
+        <button onclick="printWageSlipsPDF()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 cursor-pointer shadow-xs">
+          🖨️ Export PDF Report
+        </button>
+      </div>
+      <div id="wageSlipsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+    </section>
+  </main>
+
+  <!-- ================= 6:00 PM WHATSAPP EXECUTIVE MODAL ================= -->
+  <div id="waModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col max-h-[90vh]">
+      
+      <div class="px-4 py-3 bg-emerald-600 text-white flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">💬</span>
+          <h3 class="font-bold text-sm">6:00 PM WhatsApp Executive Summary</h3>
+          <span class="bg-emerald-800 text-[10px] font-black px-2 py-0.5 rounded">Head Office Ready</span>
+        </div>
+        <button onclick="closeWhatsAppExecutiveModal()" class="text-white hover:bg-emerald-700 w-7 h-7 rounded-full flex items-center justify-center cursor-pointer font-bold">✕</button>
+      </div>
+
+      <div class="p-4 space-y-3 overflow-y-auto flex-1">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Send to Specific Manager / MD WhatsApp (Optional):</label>
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs font-bold text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600">+91</span>
+            <input type="text" id="targetPhone" placeholder="9431XXXXXX (Leave blank for chat picker)" class="flex-1 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-1.5 text-xs outline-none text-slate-800 dark:text-white" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Formatted Message Preview:</label>
+          <pre id="summaryPreview" class="bg-slate-900 text-emerald-400 p-3 rounded-xl text-[11px] font-mono whitespace-pre-wrap leading-relaxed border border-slate-800 select-all"></pre>
+        </div>
+      </div>
+
+      <div class="p-3 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 flex items-center justify-end gap-2">
+        <button onclick="copySummaryText()" id="copyBtn" class="px-4 py-2 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 cursor-pointer">
+          📋 Copy Text
+        </button>
+        <button onclick="sendSummaryWhatsApp()" class="px-4 py-2 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-xs">
+          🚀 1-Tap Send on WhatsApp
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= ROLE PIN UNLOCK MODAL (MASKED INPUT) ================= -->
+  <div id="pinModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
+        <h3 class="font-bold text-sm text-slate-800 dark:text-white">🔒 Unlock Role Access</h3>
+        <button onclick="closePinModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer font-bold">✕</button>
+      </div>
+      <p class="text-xs text-slate-500">Enter your 4-digit authorization PIN:</p>
+      <input type="password" maxlength="4" id="pinInput" placeholder="••••" class="w-full text-center tracking-widest text-xl font-bold bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl py-2.5 outline-none focus:border-blue-500 text-slate-800 dark:text-white" />
+      <div class="grid grid-cols-3 gap-2">
+        <button onclick="typePin('1')" class="py-2.5 bg-slate-100 dark:bg-slate-700 rounded-lg font-bold text-sm cursor-pointer">1</button>
+        <button onclick="typePin('2')" class="py-2.5 bg-slate-100 dark:bg-slate-700 rounded-lg font-bold text-sm cursor-pointer">2</button>
+        <button onclick="typePin('3')" class="py-2.5 bg-slate-100 dark:bg-slate-700 rounded-lg font-bold text-sm cursor-pointer">3</button>
+        <button onclick="typePin('4')" class="py-2.5 bg-slate-100 dark:bg-slate-700 rounded-lg font-bold text-sm cursor-pointer">4</button>
+        <button onclick="typePin('5')" class="py-2.5 bg-slate-100 dark:bg-slate-700 rounded-lg font-bold text-sm cursor-pointer">5</button>
+        <button onclick="typePin('6')" class="py-2.5 bg-slate-100 dark:bg-slate-700 rounded-lg font-bold text-sm cursor-pointer">6</button>
+        <button onclick="typePin('7')" class="py-2.5 bg-slate-100 dark:bg-slate-700 rounded-lg font-bold text-sm cursor-pointer">7</button>
+        <button onclick="typePin('8')" class="py-2.5 bg-slate-100 dark:bg-slate-700 rounded-lg font-bold text-sm cursor-pointer">8</button>
+        <button onclick="typePin('9')" class="py-2.5 bg-slate-100 dark:bg-slate-700 rounded-lg font-bold text-sm cursor-pointer">9</button>
+        <button onclick="clearPin()" class="py-2.5 bg-rose-100 text-rose-700 rounded-lg font-bold text-xs cursor-pointer">Clear</button>
+        <button onclick="typePin('0')" class="py-2.5 bg-slate-100 dark:bg-slate-700 rounded-lg font-bold text-sm cursor-pointer">0</button>
+        <button onclick="submitPin()" class="py-2.5 bg-blue-600 text-white rounded-lg font-bold text-xs cursor-pointer">Unlock</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= INLINE SCRIPT ================= -->
+  <script>
+    // 25 Real Workers for Barsoi -> Madan
+    const workers = [
+      { id: 'w1', name: 'Madan tudu', desig: 'Mason', rate: 800, phone: '9876543210' },
+      { id: 'w2', name: 'Sushil', desig: 'Mason', rate: 750, phone: '9876543211' },
+      { id: 'w3', name: 'Som', desig: 'Mason', rate: 750, phone: '9876543212' },
+      { id: 'w4', name: 'Bhado', desig: 'Mason', rate: 750, phone: '9876543213' },
+      { id: 'w5', name: 'Panchanad', desig: 'Helper', rate: 550, phone: '9876543214' },
+      { id: 'w6', name: 'Suresh', desig: 'Helper', rate: 550, phone: '9876543215' },
+      { id: 'w7', name: 'Soklal', desig: 'Helper', rate: 550, phone: '9876543216' },
+      { id: 'w8', name: 'GOPAL', desig: 'Helper', rate: 550, phone: '9876543217' },
+      { id: 'w9', name: 'BODH RAY', desig: 'Helper', rate: 550, phone: '9876543218' },
+      { id: 'w10', name: 'LAKHIRAM', desig: 'Helper', rate: 550, phone: '9876543219' },
+      { id: 'w11', name: 'RIYAJUL CARPENTER', desig: 'Carpenter', rate: 800, phone: '9876543220' },
+      { id: 'w12', name: 'MOJAHID', desig: 'Carpenter', rate: 800, phone: '9876543221' },
+      { id: 'w13', name: 'GULAM MURTUJA', desig: 'Carpenter', rate: 800, phone: '9876543222' },
+      { id: 'w14', name: 'MOHIB ALAM', desig: 'Helper', rate: 550, phone: '9876543223' },
+      { id: 'w15', name: 'MD ALAMGIR', desig: 'Bar Bender', rate: 750, phone: '9876543224' },
+      { id: 'w16', name: 'MD BJIR', desig: 'Bar Bender', rate: 750, phone: '9876543225' },
+      { id: 'w17', name: 'MD ASHAM', desig: 'Bar Bender', rate: 750, phone: '9876543226' },
+      { id: 'w18', name: 'MD AMJAD', desig: 'Bar Bender', rate: 800, phone: '9876543227' },
+      { id: 'w19', name: 'MD SHAHID', desig: 'Bar Bender', rate: 800, phone: '9876543228' },
+      { id: 'w20', name: 'SARVAN', desig: 'Helper', rate: 550, phone: '9876543229' },
+      { id: 'w21', name: 'MD AKBAR', desig: 'Bar Bender', rate: 800, phone: '9876543230' },
+      { id: 'w22', name: 'MD MATIFUL', desig: 'Bar Bender', rate: 800, phone: '9876543231' },
+      { id: 'w23', name: 'KALA', desig: 'Carpenter', rate: 750, phone: '9876543232' },
+      { id: 'w24', name: 'BABURAM', desig: 'Mason', rate: 750, phone: '9876543233' },
+      { id: 'w25', name: 'GOPAK', desig: 'Helper', rate: 550, phone: '9876543234' }
+    ];
+
+    // Local State
+    let currentDate = '2026-11-07';
+    let attendanceState = {};
+    let activeTradeFilter = 'ALL';
+    let currentRole = 'SUPERVISOR';
+    let dprState = {
+      weather: 'Heavy Rain',
+      downtimeReason: 'Rain Stopped Work',
+      downtimeHours: 2.0,
+      downtimeNotes: 'Concrete pour suspended due to rain downpour.'
+    };
+
+    // Initialize Default Attendance
+    workers.forEach(w => {
+      attendanceState[w.id] = { duty: 1.0, ot: 0, adv: 0 };
+    });
+
+    document.getElementById('datePicker').value = currentDate;
+
+    // ================= 60FPS CENTER-TO-HEADER GLIDE LOGIC =================
+    let introSkipped = false;
+    function runIntroSequence() {
+      // Step 1: Simulate Firebase connection in background
+      setTimeout(() => {
+        if (introSkipped) return;
+        const pill = document.getElementById('introPill');
+        const pillText = document.getElementById('introPillText');
+        if (pill && pillText) {
+          pill.className = "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold border bg-emerald-50 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 shadow-sm transition-all duration-300";
+          pillText.innerHTML = "🟢 Cloud Synced • Welcome, Mudassir (Barsoi ➔ Madan • 25 Workers)";
+        }
+      }, 700);
+
+      // Step 2: Smooth Glide to Header after 1.4s
+      setTimeout(() => {
+        if (introSkipped) return;
+        glideIntroToHeader();
+      }, 1400);
+    }
+
+    function glideIntroToHeader() {
+      const srcEl = document.getElementById('introLogoWrapper');
+      const destEl = document.getElementById('headerLogoTarget');
+      const backdrop = document.getElementById('introBackdrop');
+      const pillContainer = document.getElementById('introPillContainer');
+      const curtain = document.getElementById('introCurtain');
+
+      if (!srcEl || !destEl) {
+        if (curtain) curtain.style.display = 'none';
+        return;
+      }
+
+      const src = srcEl.getBoundingClientRect();
+      const dest = destEl.getBoundingClientRect();
+
+      const dx = (dest.left + dest.width / 2) - (src.left + src.width / 2);
+      const dy = (dest.top + dest.height / 2) - (src.top + src.height / 2);
+
+      // Fade out backdrop and subtitle pill
+      if (backdrop) backdrop.style.opacity = '0';
+      if (pillContainer) pillContainer.style.opacity = '0';
+
+      // Glide logo
+      srcEl.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(1)`;
+
+      // Finish intro when glide finishes
+      setTimeout(() => {
+        if (curtain) curtain.style.display = 'none';
+      }, 700);
+    }
+
+    function skipIntro() {
+      introSkipped = true;
+      const curtain = document.getElementById('introCurtain');
+      if (curtain) curtain.style.display = 'none';
+    }
+
+    // Render Workers List
+    function renderWorkers() {
+      const container = document.getElementById('workersList');
+      const search = (document.getElementById('workerSearch').value || '').toLowerCase();
+      container.innerHTML = '';
+
+      const filtered = workers.filter(w => {
+        const matchesTrade = activeTradeFilter === 'ALL' || w.desig.toLowerCase() === activeTradeFilter.toLowerCase();
+        const matchesSearch = w.name.toLowerCase().includes(search) || w.desig.toLowerCase().includes(search);
+        return matchesTrade && matchesSearch;
+      });
+
+      filtered.forEach(w => {
+        const att = attendanceState[w.id] || { duty: 1.0, ot: 0, adv: 0 };
+        const card = document.createElement('div');
+        card.className = "bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs space-y-2.5";
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="font-bold text-xs text-slate-800 dark:text-white block">${w.name}</span>
+              <span class="text-[11px] text-slate-400">${w.desig} · ₹${w.rate}/day</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <button onclick="setDuty('${w.id}', 1.0)" class="w-7 h-7 rounded-lg text-xs font-bold ${att.duty === 1.0 ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600'}">P</button>
+              <button onclick="setDuty('${w.id}', 0.5)" class="w-7 h-7 rounded-lg text-xs font-bold ${att.duty === 0.5 ? 'bg-amber-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600'}">H</button>
+              <button onclick="setDuty('${w.id}', 0.0)" class="w-7 h-7 rounded-lg text-xs font-bold ${att.duty === 0.0 ? 'bg-rose-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600'}">A</button>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-700 text-xs">
+            <div class="flex items-center gap-1">
+              <span class="text-slate-400">OT:</span>
+              <input type="number" min="0" max="12" value="${att.ot || 0}" onchange="setOT('${w.id}', this.value)" class="w-12 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-1 py-0.5 text-center font-semibold text-slate-800 dark:text-white" />
+            </div>
+            <div class="flex items-center gap-1">
+              <span class="text-slate-400">Adv:</span>
+              <input type="number" min="0" step="100" value="${att.adv || 0}" onchange="setAdv('${w.id}', this.value)" class="w-16 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-1 py-0.5 text-center font-semibold text-slate-800 dark:text-white" placeholder="₹0" />
+            </div>
+            <button onclick="sendWorkerSlipWhatsApp('${w.id}')" class="ml-auto text-emerald-600 font-bold hover:underline text-[11px] cursor-pointer">WhatsApp 📱</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      updateStats();
+      renderRegisterTable();
+      renderWageSlips();
+    }
+
+    function setDuty(id, val) {
+      if (!attendanceState[id]) attendanceState[id] = { duty: 1.0, ot: 0, adv: 0 };
+      attendanceState[id].duty = val;
+      renderWorkers();
+    }
+
+    function setOT(id, val) {
+      if (!attendanceState[id]) attendanceState[id] = { duty: 1.0, ot: 0, adv: 0 };
+      attendanceState[id].ot = parseFloat(val) || 0;
+      updateStats();
+    }
+
+    function setAdv(id, val) {
+      if (!attendanceState[id]) attendanceState[id] = { duty: 1.0, ot: 0, adv: 0 };
+      attendanceState[id].adv = parseFloat(val) || 0;
+      updateStats();
+    }
+
+    function markAllPresent() {
+      workers.forEach(w => {
+        if (!attendanceState[w.id]) attendanceState[w.id] = { duty: 1.0, ot: 0, adv: 0 };
+        attendanceState[w.id].duty = 1.0;
+      });
+      renderWorkers();
+    }
+
+    function filterWorkers() {
+      renderWorkers();
+    }
+
+    function filterByTrade(trade) {
+      activeTradeFilter = trade;
+      document.querySelectorAll('.trade-btn').forEach(btn => {
+        btn.className = btn.textContent.trim().includes(trade) 
+          ? "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white cursor-pointer trade-btn"
+          : "px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 cursor-pointer trade-btn";
+      });
+      renderWorkers();
+    }
+
+    function updateStats() {
+      let presentCount = 0;
+      let otTotal = 0;
+      let advTotal = 0;
+      let wageTotal = 0;
+
+      workers.forEach(w => {
+        const att = attendanceState[w.id] || { duty: 0, ot: 0, adv: 0 };
+        if (att.duty > 0) presentCount += (att.duty === 1.0 ? 1 : 0.5);
+        otTotal += (att.ot || 0);
+        advTotal += (att.adv || 0);
+        wageTotal += (att.duty * w.rate) + (att.ot * (w.rate / 8)) - (att.adv || 0);
+      });
+
+      document.getElementById('statPresent').innerHTML = `${presentCount} <span class="text-xs font-normal text-slate-400">/ ${workers.length}</span>`;
+      document.getElementById('statPresentPct').textContent = `${Math.round((presentCount / workers.length) * 100)}%`;
+      document.getElementById('statOT').innerHTML = `${otTotal} <span class="text-xs font-normal">Hrs</span>`;
+      document.getElementById('statAdv').textContent = `₹${advTotal.toLocaleString('en-IN')}`;
+      document.getElementById('statWage').textContent = `₹${Math.round(wageTotal).toLocaleString('en-IN')}`;
+    }
+
+    // Tabs Switching
+    function switchTab(tab) {
+      ['attendance', 'dpr', 'bim3d', 'register', 'slips'].forEach(t => {
+        const el = document.getElementById(`tab-${t}`);
+        if (el) el.classList.add('hidden');
+        const btn = document.getElementById(`tabBtn-${t}`);
+        if (btn) btn.className = "px-4 py-2 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer shrink-0";
+      });
+      const activeEl = document.getElementById(`tab-${tab}`);
+      if (activeEl) activeEl.classList.remove('hidden');
+      const activeBtn = document.getElementById(`tabBtn-${tab}`);
+      if (activeBtn) activeBtn.className = "px-4 py-2 text-xs font-bold border-b-2 border-emerald-600 text-emerald-700 dark:text-emerald-400 cursor-pointer shrink-0";
+
+      if (tab === 'bim3d') {
+        initThreeJsIfNeeded();
+      }
+    }
+
+    // DPR & Downtime Logic
+    function setDowntimeTag(tag) {
+      dprState.downtimeReason = tag;
+      if (tag === 'Rain Stopped Work') {
+        dprState.weather = 'Heavy Rain';
+        document.getElementById('weatherSelect').value = 'Heavy Rain';
+      }
+    }
+
+    function setDowntimeHours(hrs) {
+      dprState.downtimeHours = hrs;
+    }
+
+    function updateDprWeather(val) {
+      dprState.weather = val;
+    }
+
+    // 6:00 PM WhatsApp Summary Modal
+    function openWhatsAppExecutiveModal() {
+      let presentCount = 0;
+      const trades = {};
+      let totalOT = 0;
+      let totalAdv = 0;
+
+      workers.forEach(w => {
+        const att = attendanceState[w.id] || { duty: 0, ot: 0, adv: 0 };
+        if (att.duty > 0) {
+          presentCount++;
+          trades[w.desig] = (trades[w.desig] || 0) + 1;
+        }
+        totalOT += (att.ot || 0);
+        totalAdv += (att.adv || 0);
+      });
+
+      let tradeStr = Object.entries(trades).map(([t, count]) => `• ${t}: ${count} Present`).join('\n');
+
+      const text = `🏗️ *GLOBAL INDUSTRIES — 6:00 PM DAILY EXECUTIVE SITE SUMMARY*
+🏢 *Site:* Barsoi ➔ Madan
+📅 *Date:* ${currentDate}
+👤 *Prepared By:* Mudassir (${currentRole})
+━━━━━━━━━━━━━━━━━━━━━━━━
+👥 *LABOUR WORKFORCE (हाज़िरी)*
+• Registered Strength: ${workers.length} Workers
+• Total Present: *${presentCount}* (${Math.round((presentCount/workers.length)*100)}%)
+• Officials On Site: 2 of 2
+
+🔨 *TRADE BREAKDOWN (उपस्थिति)*
+${tradeStr || '• All workers recorded'}
+
+⏱️ *OVERTIME & ADVANCES TODAY*
+• Total Overtime Clocked: *${totalOT} Hrs*
+• Cash Advances Paid Today: ₹${totalAdv.toLocaleString('en-IN')}
+
+⛈️ *WEATHER & DOWNTIME TRACKER*
+• Weather: ${dprState.weather}
+• ⚠️ Downtime Delay: ${dprState.downtimeReason} (${dprState.downtimeHours} hrs lost)
+• Note: ${dprState.downtimeNotes}
+
+📦 *MATERIALS RECEIVED (CHALANI LOG)*
+• Cement: 200 Bags (Challan: CH-9042, Party: Ultratech)
+
+🧱 *MATERIALS CONSUMED*
+• Cement: 60 Bags | TMT 12mm: 300 Kg
+
+📝 *WORK PROGRESS*
+RCC Column casting Grid B1-B4 completed up to lintel beam level.
+━━━━━━━━━━━━━━━━━━━━━━━━
+_Dispatched via Global Industries Portal_`;
+
+      document.getElementById('summaryPreview').textContent = text;
+      document.getElementById('waModal').classList.remove('hidden');
+    }
+
+    function closeWhatsAppExecutiveModal() {
+      document.getElementById('waModal').classList.add('hidden');
+    }
+
+    function copySummaryText() {
+      const text = document.getElementById('summaryPreview').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copyBtn');
+        btn.textContent = '✓ Copied!';
+        setTimeout(() => btn.textContent = '📋 Copy Text', 2000);
+      }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        alert('Copied to clipboard!');
+      });
+    }
+
+    function sendSummaryWhatsApp() {
+      const text = document.getElementById('summaryPreview').textContent;
+      const phone = (document.getElementById('targetPhone').value || '').replace(/\D/g, '');
+      const url = phone 
+        ? `https://wa.me/${phone.length === 10 ? '91' + phone : phone}?text=${encodeURIComponent(text)}`
+        : `https://wa.me/?text=${encodeURIComponent(text)}`;
+      window.open(url, '_blank');
+    }
+
+    function sendWorkerSlipWhatsApp(workerId) {
+      const w = workers.find(x => x.id === workerId);
+      if (!w) return;
+      const att = attendanceState[w.id] || { duty: 1.0, ot: 0, adv: 0 };
+      const wage = (att.duty * w.rate) + (att.ot * (w.rate / 8)) - (att.adv || 0);
+      const text = `*GLOBAL INDUSTRIES - WAGE SLIP (हाज़िरी पर्ची)*\n*Worker:* ${w.name} (${w.desig})\n*Date:* ${currentDate}\n*Duty:* ${att.duty === 1.0 ? 'Present (P)' : att.duty === 0.5 ? 'Half Day (H)' : 'Absent (A)'}\n*OT Hours:* ${att.ot}h\n*Advance:* ₹${att.adv}\n*Net Payable:* ₹${Math.round(wage)}\n\n_Global Industries Management_`;
+      window.open(`https://wa.me/91${w.phone}?text=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    // Role PIN Logic
+    function openPinModal() {
+      document.getElementById('pinInput').value = '';
+      document.getElementById('pinModal').classList.remove('hidden');
+      document.getElementById('pinInput').focus();
+    }
+    function closePinModal() {
+      document.getElementById('pinModal').classList.add('hidden');
+    }
+    function typePin(digit) {
+      const inp = document.getElementById('pinInput');
+      if (inp.value.length < 4) inp.value += digit;
+    }
+    function clearPin() {
+      document.getElementById('pinInput').value = '';
+    }
+    function submitPin() {
+      const pin = document.getElementById('pinInput').value;
+      if (pin === '9431') {
+        currentRole = 'ADMIN';
+        document.getElementById('roleBadge').textContent = 'ADMIN';
+        document.getElementById('roleBadge').className = 'px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 cursor-pointer shadow-xs';
+        closePinModal();
+      } else if (pin === '1820') {
+        currentRole = 'SITE INCHARGE';
+        document.getElementById('roleBadge').textContent = 'SITE INCHARGE';
+        document.getElementById('roleBadge').className = 'px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 cursor-pointer shadow-xs';
+        closePinModal();
+      } else if (pin === '5566') {
+        currentRole = 'SUPERVISOR';
+        document.getElementById('roleBadge').textContent = 'SUPERVISOR';
+        document.getElementById('roleBadge').className = 'px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 cursor-pointer shadow-xs';
+        closePinModal();
+      } else if (pin === '6767') {
+        document.body.classList.add('barrel-roll');
+        setTimeout(() => document.body.classList.remove('barrel-roll'), 1700);
+        closePinModal();
+      } else {
+        alert('Incorrect PIN');
+        clearPin();
+      }
+    }
+
+    // Register & Wage Slips Rendering
+    function renderRegisterTable() {
+      const tbody = document.getElementById('registerTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      workers.forEach((w, idx) => {
+        const att = attendanceState[w.id] || { duty: 1.0, ot: 0, adv: 0 };
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 dark:hover:bg-slate-750";
+        tr.innerHTML = `
+          <td class="p-2 text-slate-400">${idx + 1}</td>
+          <td class="p-2 font-bold text-slate-800 dark:text-white">${w.name}</td>
+          <td class="p-2 text-slate-500">${w.desig}</td>
+          <td class="p-2 font-semibold">₹${w.rate}</td>
+          <td class="p-2 text-center"><span class="px-2 py-0.5 rounded font-bold text-[10px] ${att.duty === 1.0 ? 'bg-emerald-100 text-emerald-800' : att.duty === 0.5 ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800'}">${att.duty === 1.0 ? 'P' : att.duty === 0.5 ? 'H' : 'A'}</span></td>
+          <td class="p-2 text-center">${att.ot}h</td>
+          <td class="p-2 text-right font-bold text-rose-600">₹${att.adv}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderWageSlips() {
+      const container = document.getElementById('wageSlipsContainer');
+      if (!container) return;
+      container.innerHTML = '';
+      workers.forEach(w => {
+        const att = attendanceState[w.id] || { duty: 1.0, ot: 0, adv: 0 };
+        const wage = (att.duty * w.rate) + (att.ot * (w.rate / 8)) - (att.adv || 0);
+        const card = document.createElement('div');
+        card.className = "bg-slate-50 dark:bg-slate-700/50 p-3 rounded-xl border border-slate-200 dark:border-slate-600 text-xs space-y-1.5";
+        card.innerHTML = `
+          <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-600 pb-1">
+            <span class="font-bold text-slate-800 dark:text-white">${w.name} (${w.desig})</span>
+            <span class="font-mono font-bold text-emerald-600">₹${Math.round(wage)}</span>
+          </div>
+          <div class="flex items-center justify-between text-slate-500">
+            <span>Rate: ₹${w.rate}/d · Duty: ${att.duty === 1.0 ? '1.0 (P)' : att.duty === 0.5 ? '0.5 (H)' : '0.0 (A)'}</span>
+            <span>OT: ${att.ot}h · Adv: ₹${att.adv}</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Export to Excel via SheetJS
+    function exportToExcel() {
+      const data = workers.map((w, idx) => {
+        const att = attendanceState[w.id] || { duty: 1.0, ot: 0, adv: 0 };
+        const net = (att.duty * w.rate) + (att.ot * (w.rate / 8)) - (att.adv || 0);
+        return {
+          "Sl No": idx + 1,
+          "Worker Name": w.name,
+          "Trade": w.desig,
+          "Rate (Rs)": w.rate,
+          "Attendance": att.duty === 1.0 ? "P" : att.duty === 0.5 ? "H" : "A",
+          "OT Hours": att.ot,
+          "Advance (Rs)": att.adv,
+          "Net Payable (Rs)": Math.round(net)
+        };
+      });
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Site Register");
+      XLSX.writeFile(wb, `Global_Industries_MusterRoll_${currentDate}.xlsx`);
+    }
+
+    function printWageSlipsPDF() {
+      window.print();
+    }
+
+    function toggleDarkMode() {
+      document.documentElement.classList.toggle('dark');
+    }
+
+    // ================= THREE.JS 3D BIM SITE VIEWER =================
+    let threeInitialized = false;
+    let threeScene, threeCamera, threeRenderer, threeControls;
+    let craneGroup, mixerDrum, hookGroup;
+    let explodedGroups = {};
+    let threeLights = {};
+
+    function initThreeJsIfNeeded() {
+      if (threeInitialized) return;
+      const container = document.getElementById('threeContainer');
+      if (!container || typeof THREE === 'undefined') return;
+
+      threeInitialized = true;
+      const w = container.clientWidth || 800;
+      const h = container.clientHeight || 580;
+
+      // Scene, Camera, Renderer
+      threeScene = new THREE.Scene();
+      const sky = new THREE.Color(0xdbeafe);
+      threeScene.background = sky;
+      threeScene.fog = new THREE.FogExp2(0xdbeafe, 0.015);
+
+      threeCamera = new THREE.PerspectiveCamera(45, w / h, 0.5, 300);
+      threeCamera.position.set(32, 24, 38);
+
+      threeRenderer = new THREE.WebGLRenderer({ antialias: true });
+      threeRenderer.setSize(w, h);
+      threeRenderer.shadowMap.enabled = true;
+      threeRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      container.appendChild(threeRenderer.domElement);
+
+      threeControls = new THREE.OrbitControls(threeCamera, threeRenderer.domElement);
+      threeControls.enableDamping = true;
+      threeControls.dampingFactor = 0.05;
+      threeControls.maxPolarAngle = Math.PI / 2 - 0.02;
+      threeControls.target.set(0, 6, 0);
+
+      // Lighting
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x334155, 0.7);
+      threeScene.add(hemiLight);
+
+      const dirLight = new THREE.DirectionalLight(0xfff7ed, 2.2);
+      dirLight.position.set(35, 45, 25);
+      dirLight.castShadow = true;
+      dirLight.shadow.mapSize.width = 1024;
+      dirLight.shadow.mapSize.height = 1024;
+      threeScene.add(dirLight);
+
+      const floodLight1 = new THREE.PointLight(0xffedd5, 0, 50, 1.2);
+      floodLight1.position.set(-15, 20, -15);
+      threeScene.add(floodLight1);
+
+      const floodLight2 = new THREE.PointLight(0xffedd5, 0, 50, 1.2);
+      floodLight2.position.set(15, 20, 15);
+      threeScene.add(floodLight2);
+
+      threeLights = { dirLight, hemiLight, floods: [floodLight1, floodLight2] };
+
+      // Ground
+      const groundGeo = new THREE.PlaneGeometry(160, 160);
+      const groundMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.9 });
+      const groundMesh = new THREE.Mesh(groundGeo, groundMat);
+      groundMesh.rotation.x = -Math.PI / 2;
+      groundMesh.receiveShadow = true;
+      threeScene.add(groundMesh);
+
+      // Exploded Groups
+      explodedGroups.ground = new THREE.Group();
+      explodedGroups.columns = new THREE.Group();
+      explodedGroups.slab = new THREE.Group();
+      explodedGroups.rebar = new THREE.Group();
+      threeScene.add(explodedGroups.ground);
+      threeScene.add(explodedGroups.columns);
+      threeScene.add(explodedGroups.slab);
+      threeScene.add(explodedGroups.rebar);
+
+      // Building Foundation
+      const raftGeo = new THREE.BoxGeometry(22, 1.2, 18);
+      const concMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.85 });
+      const raftMesh = new THREE.Mesh(raftGeo, concMat);
+      raftMesh.position.set(0, 0.6, 0);
+      raftMesh.castShadow = true;
+      raftMesh.receiveShadow = true;
+      explodedGroups.ground.add(raftMesh);
+
+      // Ground Columns (24 reinforced columns)
+      const colGeo = new THREE.BoxGeometry(0.9, 5.2, 0.9);
+      for (let x = -8; x <= 8; x += 5.3) {
+        for (let z = -6; z <= 6; z += 4) {
+          const col = new THREE.Mesh(colGeo, concMat);
+          col.position.set(x, 3.8, z);
+          col.castShadow = true;
+          explodedGroups.columns.add(col);
+        }
+      }
+
+      // Roof Slab
+      const slabGeo = new THREE.BoxGeometry(22, 0.7, 18);
+      const slabMesh = new THREE.Mesh(slabGeo, concMat);
+      slabMesh.position.set(0, 6.75, 0);
+      slabMesh.castShadow = true;
+      slabMesh.receiveShadow = true;
+      explodedGroups.slab.add(slabMesh);
+
+      // Wet Active Concrete Pour Zone
+      const wetGeo = new THREE.BoxGeometry(10, 0.1, 8);
+      const wetMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.2 });
+      const wetMesh = new THREE.Mesh(wetGeo, wetMat);
+      wetMesh.position.set(4, 7.15, -3);
+      explodedGroups.slab.add(wetMesh);
+
+      // Rebar Mesh
+      const rebarMat = new THREE.MeshStandardMaterial({ color: 0x713f12, metalness: 0.85, roughness: 0.35 });
+      const barGeo = new THREE.CylinderGeometry(0.04, 0.04, 18, 6);
+      for (let rx = -9; rx <= 9; rx += 1.5) {
+        const b = new THREE.Mesh(barGeo, rebarMat);
+        b.rotation.x = Math.PI / 2;
+        b.position.set(rx, 7.25, 0);
+        explodedGroups.rebar.add(b);
+      }
+
+      // Tower Crane
+      craneGroup = new THREE.Group();
+      craneGroup.position.set(-14, 0, -10);
+      const craneSteelMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.8, roughness: 0.25 });
+      const mastGeo = new THREE.BoxGeometry(2.2, 28, 2.2);
+      const mastMesh = new THREE.Mesh(mastGeo, craneSteelMat);
+      mastMesh.position.set(0, 14, 0);
+      mastMesh.castShadow = true;
+      craneGroup.add(mastMesh);
+
+      const jibGroup = new THREE.Group();
+      jibGroup.position.set(0, 27.5, 0);
+      const jibGeo = new THREE.BoxGeometry(26, 1.2, 1.2);
+      const jibMesh = new THREE.Mesh(jibGeo, craneSteelMat);
+      jibMesh.position.set(11, 0, 0);
+      jibMesh.castShadow = true;
+      jibGroup.add(jibMesh);
+
+      hookGroup = new THREE.Group();
+      hookGroup.position.set(12, -7.5, 0);
+      const bucketGeo = new THREE.CylinderGeometry(0.9, 0.5, 1.6, 12);
+      const bucketMat = new THREE.MeshStandardMaterial({ color: 0xef4444, metalness: 0.6 });
+      const bucketMesh = new THREE.Mesh(bucketGeo, bucketMat);
+      hookGroup.add(bucketMesh);
+      jibGroup.add(hookGroup);
+
+      craneGroup.add(jibGroup);
+      threeScene.add(craneGroup);
+
+      // Mixer Truck
+      const truckGroup = new THREE.Group();
+      truckGroup.position.set(16, 0, 14);
+      truckGroup.rotation.y = -Math.PI / 4;
+      const cabGeo = new THREE.BoxGeometry(3.2, 3, 2.4);
+      const cabMat = new THREE.MeshStandardMaterial({ color: 0x059669 });
+      const cabMesh = new THREE.Mesh(cabGeo, cabMat);
+      cabMesh.position.set(-3.5, 2, 0);
+      truckGroup.add(cabMesh);
+
+      const drumGeo = new THREE.CylinderGeometry(1.4, 2.0, 5.2, 16);
+      const drumMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.5 });
+      mixerDrum = new THREE.Mesh(drumGeo, drumMat);
+      mixerDrum.rotation.z = Math.PI / 2 - 0.25;
+      mixerDrum.position.set(1, 2.6, 0);
+      truckGroup.add(mixerDrum);
+      threeScene.add(truckGroup);
+
+      // Stockyard (Pallets & Rebar)
+      const stockGroup = new THREE.Group();
+      stockGroup.position.set(-16, 0, 14);
+      for (let py = 0; py < 3; py++) {
+        const palGeo = new THREE.BoxGeometry(2.4, 0.6, 3.2);
+        const palMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1 });
+        const palMesh = new THREE.Mesh(palGeo, palMat);
+        palMesh.position.set(0, 0.4 + py * 0.7, 0);
+        stockGroup.add(palMesh);
+      }
+      threeScene.add(stockGroup);
+
+      // Animation Loop
+      function animate3D() {
+        requestAnimationFrame(animate3D);
+        if (jibGroup) jibGroup.rotation.y = Math.sin(Date.now() * 0.0008) * 0.6 + 0.3;
+        if (mixerDrum) mixerDrum.rotation.x += 0.03;
+        if (hookGroup) hookGroup.position.y = -7.5 + Math.sin(Date.now() * 0.002) * 0.6;
+        threeControls.update();
+        threeRenderer.render(threeScene, threeCamera);
+      }
+      animate3D();
+    }
+
+    function set3DCamera(view) {
+      if (!threeCamera || !threeControls) return;
+      document.querySelectorAll('.cam-btn').forEach(b => b.className = "px-2.5 py-1 rounded-lg font-semibold text-slate-400 hover:text-white cursor-pointer cam-btn");
+      event.target.className = "px-2.5 py-1 rounded-lg font-semibold bg-blue-600 text-white cursor-pointer cam-btn";
+      if (view === 'overview') {
+        threeCamera.position.set(32, 24, 38);
+        threeControls.target.set(0, 6, 0);
+      } else if (view === 'slab') {
+        threeCamera.position.set(12, 14, 16);
+        threeControls.target.set(2, 7, 0);
+      } else if (view === 'crane') {
+        threeCamera.position.set(-6, 32, -2);
+        threeControls.target.set(-14, 26, -10);
+      } else if (view === 'stock') {
+        threeCamera.position.set(-8, 8, 22);
+        threeControls.target.set(-14, 2, 12);
+      }
+      threeControls.update();
+    }
+
+    function set3DLighting(mode) {
+      if (!threeLights || !threeScene) return;
+      document.querySelectorAll('.light-btn').forEach(b => b.className = "p-1.5 rounded-lg text-slate-400 hover:text-white cursor-pointer light-btn");
+      event.target.className = "p-1.5 rounded-lg bg-blue-600 text-white cursor-pointer light-btn";
+
+      if (mode === 'day') {
+        const sky = new THREE.Color(0xdbeafe);
+        threeScene.background = sky;
+        if (threeScene.fog) threeScene.fog.color = sky;
+        threeLights.dirLight.color.setHex(0xfff7ed);
+        threeLights.dirLight.intensity = 2.2;
+        threeLights.floods.forEach(f => f.intensity = 0);
+      } else if (mode === 'sunset') {
+        const sky = new THREE.Color(0xfdba74);
+        threeScene.background = sky;
+        if (threeScene.fog) threeScene.fog.color = sky;
+        threeLights.dirLight.color.setHex(0xf97316);
+        threeLights.dirLight.intensity = 2.6;
+        threeLights.floods.forEach(f => f.intensity = 0);
+      } else if (mode === 'night') {
+        const sky = new THREE.Color(0x090d16);
+        threeScene.background = sky;
+        if (threeScene.fog) threeScene.fog.color = sky;
+        threeLights.dirLight.color.setHex(0x38bdf8);
+        threeLights.dirLight.intensity = 0.2;
+        threeLights.floods.forEach(f => f.intensity = 4.5);
+      }
+    }
+
+    function set3DExplode(val) {
+      const v = parseFloat(val);
+      document.getElementById('explodeValText').textContent = `${Math.round(v * 100)}%`;
+      if (explodedGroups.columns) explodedGroups.columns.position.y = v * 3.5;
+      if (explodedGroups.slab) explodedGroups.slab.position.y = v * 8.0;
+      if (explodedGroups.rebar) explodedGroups.rebar.position.y = v * 11.0;
+    }
+
+    // Keyboard shortcut '/'
+    window.addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement.tagName !== 'INPUT') {
+        e.preventDefault();
+        document.getElementById('workerSearch').focus();
+      }
+    });
+
+    // Initial Load & Sequence
+    renderWorkers();
+    runIntroSequence();
+  </script>
+</body>
+</html>

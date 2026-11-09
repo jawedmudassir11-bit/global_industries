@@ -11,7 +11,14 @@ import {
   CheckSquare,
   Wrench,
   ShieldAlert,
-  AlertTriangle
+  AlertTriangle,
+  MessageSquare,
+  Clock,
+  Copy,
+  ExternalLink,
+  Check,
+  X,
+  Zap
 } from 'lucide-react';
 import {
   AppState,
@@ -19,7 +26,8 @@ import {
   MaterialEntry,
   UserRole,
   calculateActiveStockMap,
-  parseDutyInput
+  parseDutyInput,
+  generateEndOfDayWhatsAppSummary
 } from '../utils/siteLogic';
 
 interface DprSiteTabProps {
@@ -29,6 +37,8 @@ interface DprSiteTabProps {
   monthKey: string;
   userRole: UserRole;
   userName: string;
+  siteName?: string;
+  subgroupName?: string;
   isMasterRollup: boolean;
   onUpdateDPR: (dateKey: string, updated: DPRRecord) => void;
   onPhotoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -66,6 +76,9 @@ export const DprSiteTab: React.FC<DprSiteTabProps> = ({
   selectedDay,
   monthKey,
   userRole,
+  userName,
+  siteName,
+  subgroupName,
   isMasterRollup,
   onUpdateDPR,
   onPhotoUpload,
@@ -82,6 +95,9 @@ export const DprSiteTab: React.FC<DprSiteTabProps> = ({
 }) => {
   const [subTab, setSubTab] = useState<'dpr' | 'timeline' | 'equipment'>('dpr');
   const [isRecording, setIsRecording] = useState(false);
+  const [isExecutiveModalOpen, setIsExecutiveModalOpen] = useState(false);
+  const [customPhone, setCustomPhone] = useState('');
+  const [copiedSummary, setCopiedSummary] = useState(false);
 
   // Timeline local state
   const [noteText, setNoteText] = useState('');
@@ -296,14 +312,29 @@ export const DprSiteTab: React.FC<DprSiteTabProps> = ({
         </div>
 
         {subTab === 'dpr' && (
-          <button
-            type="button"
-            onClick={shareDPRWhatsApp}
-            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-colors min-h-[40px] whitespace-nowrap shrink-0 cursor-pointer"
-          >
-            <Share2 className="w-3.5 h-3.5" />
-            <span>Share DPR on WhatsApp</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsExecutiveModalOpen(true)}
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-all min-h-[40px] whitespace-nowrap shrink-0 cursor-pointer"
+              title="1-Click 6:00 PM Summary for Head Office"
+            >
+              <MessageSquare className="w-4 h-4 text-emerald-100" />
+              <span>6:00 PM WhatsApp Summary</span>
+              <span className="hidden sm:inline-block px-1.5 py-0.5 rounded text-[10px] bg-emerald-800/70 text-emerald-100 font-extrabold">
+                1-Tap
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={shareDPRWhatsApp}
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors min-h-[40px] whitespace-nowrap shrink-0 cursor-pointer"
+              title="Quick raw DPR text"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Raw DPR</span>
+            </button>
+          </div>
         )}
       </div>
 
@@ -311,51 +342,205 @@ export const DprSiteTab: React.FC<DprSiteTabProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           {/* Left Column: Weather & Work Log */}
           <div className="lg:col-span-6 space-y-4">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-3">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-3.5">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Weather & Rain Log
-                </h3>
-                <span className="text-xs text-slate-500 font-mono">{dateKey}</span>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <CloudSun className="w-4 h-4 text-amber-500" />
+                    <span>Weather &amp; Downtime Tracker</span>
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Track site climate &amp; 1-tap downtime delays during slab pours or shuttering
+                  </p>
+                </div>
+                <span className="text-xs text-slate-500 font-mono font-bold bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">{dateKey}</span>
               </div>
-              <select
-                value={currentDpr.weather}
-                onChange={e => handleFieldChange({ weather: e.target.value })}
-                aria-label="Site Weather Condition"
-                className="w-full px-3.5 py-2.5 text-sm font-medium bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white"
-              >
-                <option value="☀️ Sunny / Clear">☀️ Sunny / Clear</option>
-                <option value="☁️ Cloudy">☁️ Cloudy</option>
-                <option value="🌧 Light Rain">🌧 Light Rain</option>
-                <option value="⛈️ Heavy Rain">⛈️ Heavy Rain</option>
-              </select>
 
-              {currentDpr.weather.includes('Rain') && (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+              {/* Weather Condition Selector */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Site Weather Condition
+                </label>
+                <select
+                  value={currentDpr.weather}
+                  onChange={e => handleFieldChange({ weather: e.target.value })}
+                  aria-label="Site Weather Condition"
+                  className="w-full px-3.5 py-2 text-sm font-medium bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white"
+                >
+                  <option value="☀️ Sunny / Clear">☀️ Sunny / Clear</option>
+                  <option value="☁️ Cloudy">☁️ Cloudy</option>
+                  <option value="🌧 Light Rain">🌧 Light Rain</option>
+                  <option value="⛈️ Heavy Rain">⛈️ Heavy Rain</option>
+                  <option value="🌪️ High Wind / Storm">🌪️ High Wind / Storm</option>
+                  <option value="🌫️ Extreme Fog / Low Visibility">🌫️ Extreme Fog / Low Visibility</option>
+                </select>
+              </div>
+
+              {/* 1-Tap Weather Downtime & Delay Reason Tracker */}
+              <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                    <span>1-Tap Delay / Idle Hours Tracker</span>
+                  </span>
+                  {currentDpr.downtimeReason && currentDpr.downtimeReason !== 'None' && (
+                    <span className="text-[11px] font-extrabold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
+                      Active Delay
+                    </span>
+                  )}
+                </div>
+
+                {/* 1-Tap Preset Delay Tags */}
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { label: '🌧️ Rain Stopped Work', reason: 'Rain Stopped Work', autoWorkStop: 'Yes', weather: '⛈️ Heavy Rain' },
+                    { label: '⚡ Power Failure', reason: 'Power Failure', autoWorkStop: 'Yes', weather: '☁️ Cloudy' },
+                    { label: '🚚 Material Stockout', reason: 'Material Stockout / Cement Delay', autoWorkStop: 'Yes' },
+                    { label: '🚜 Machine Breakdown', reason: 'Machinery / Mixer Breakdown', autoWorkStop: 'Yes' },
+                    { label: '🌊 Slush / Waterlogged', reason: 'Waterlogging & Slush', autoWorkStop: 'Yes', weather: '🌧 Light Rain' },
+                    { label: '☀️ No Downtime', reason: 'None', autoWorkStop: 'No', weather: '☀️ Sunny / Clear' }
+                  ].map(t => {
+                    const isSelected =
+                      (t.reason === 'None' && (!currentDpr.downtimeReason || currentDpr.downtimeReason === 'None')) ||
+                      currentDpr.downtimeReason === t.reason;
+
+                    return (
+                      <button
+                        key={t.label}
+                        type="button"
+                        onClick={() => {
+                          if (!canEdit) {
+                            onRequireAuth();
+                            return;
+                          }
+                          const clearing = t.reason === 'None' || currentDpr.downtimeReason === t.reason;
+                          handleFieldChange({
+                            downtimeReason: clearing ? 'None' : t.reason,
+                            workStop: clearing ? 'No' : (t.autoWorkStop || currentDpr.workStop),
+                            weather: (!clearing && t.weather) ? t.weather : currentDpr.weather,
+                            downtimeHours: clearing ? '' : (currentDpr.downtimeHours || '2.0')
+                          });
+                        }}
+                        className={`px-2.5 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-amber-500 dark:bg-amber-600 text-white border-amber-600 dark:border-amber-500 shadow-2xs'
+                            : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
+                        }`}
+                      >
+                        {t.label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Additional Details when Downtime Reason is logged */}
+                {currentDpr.downtimeReason && currentDpr.downtimeReason !== 'None' && (
+                  <div className="space-y-2.5 pt-2 p-2.5 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/60">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <span className="text-[11px] font-bold text-amber-900 dark:text-amber-200">
+                        Hours Lost / Work Paused:
+                      </span>
+                      {/* Quick Hour Chips */}
+                      <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
+                        {[
+                          { l: '1h', v: '1.0' },
+                          { l: '2h', v: '2.0' },
+                          { l: 'Half Day (3.5h)', v: '3.5' },
+                          { l: '4h', v: '4.0' },
+                          { l: 'Full Day (8h)', v: '8.0' }
+                        ].map(h => (
+                          <button
+                            key={h.l}
+                            type="button"
+                            onClick={() => handleFieldChange({ downtimeHours: h.v })}
+                            className={`px-2 py-0.5 text-[11px] font-mono font-bold rounded border transition-colors cursor-pointer ${
+                              String(currentDpr.downtimeHours) === h.v
+                                ? 'bg-amber-600 text-white border-amber-700'
+                                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-amber-200 dark:border-slate-700 hover:bg-amber-100'
+                            }`}
+                          >
+                            {h.l}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <label className="block">
+                        <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-400">Custom Idle Hours</span>
+                        <input
+                          type="number"
+                          step="0.5"
+                          min="0"
+                          max="24"
+                          value={currentDpr.downtimeHours || ''}
+                          onChange={e => handleFieldChange({ downtimeHours: e.target.value })}
+                          placeholder="e.g. 2.5"
+                          className="mt-0.5 w-full px-2.5 py-1.5 text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-400">Impact / Reason Details</span>
+                        <input
+                          type="text"
+                          value={currentDpr.downtimeNotes || ''}
+                          onChange={e => handleFieldChange({ downtimeNotes: e.target.value })}
+                          placeholder="e.g. Concrete mixer motor burnt at 2 PM"
+                          className="mt-0.5 w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
+                        />
+                      </label>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-[10px] text-amber-800 dark:text-amber-300 italic">
+                        Logs reason for half-days or idle shifts during concrete pours.
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleFieldChange({
+                            downtimeReason: 'None',
+                            downtimeHours: '',
+                            downtimeNotes: '',
+                            workStop: 'No'
+                          })
+                        }
+                        className="text-[10px] font-bold text-rose-600 hover:text-rose-700 underline cursor-pointer"
+                      >
+                        Reset Delay
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Rain Window (Visible if rain or if rain window recorded) */}
+              {(currentDpr.weather.includes('Rain') || currentDpr.rainStart || currentDpr.workStop === 'Yes') && (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
                   <label className="block">
-                    <span className="text-xs font-medium text-slate-500">Rain Start</span>
+                    <span className="text-[11px] font-semibold text-slate-500">Rain Start</span>
                     <input
                       type="time"
                       value={currentDpr.rainStart}
                       onChange={e => handleFieldChange({ rainStart: e.target.value })}
-                      className="mt-1 w-full px-3 py-2 text-xs font-mono bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg"
+                      className="mt-1 w-full px-2.5 py-1.5 text-xs font-mono bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs font-medium text-slate-500">Rain End</span>
+                    <span className="text-[11px] font-semibold text-slate-500">Rain End</span>
                     <input
                       type="time"
                       value={currentDpr.rainEnd}
                       onChange={e => handleFieldChange({ rainEnd: e.target.value })}
-                      className="mt-1 w-full px-3 py-2 text-xs font-mono bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg"
+                      className="mt-1 w-full px-2.5 py-1.5 text-xs font-mono bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs font-medium text-slate-500">Work Stopped?</span>
+                    <span className="text-[11px] font-semibold text-slate-500">Work Stopped?</span>
                     <select
                       value={currentDpr.workStop}
                       onChange={e => handleFieldChange({ workStop: e.target.value })}
-                      className="mt-1 w-full px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg"
+                      className="mt-1 w-full px-2.5 py-1.5 text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
                     >
                       <option value="No">No</option>
                       <option value="Yes">Yes</option>
@@ -897,6 +1082,193 @@ export const DprSiteTab: React.FC<DprSiteTabProps> = ({
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+      {/* 1-TAP 6:00 PM WHATSAPP EXECUTIVE SUMMARY MODAL */}
+      {isExecutiveModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-3 sm:p-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="exec-summary-title"
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+          >
+            {/* Modal Header */}
+            <div className="px-5 py-3.5 bg-gradient-to-r from-[#152E4D] via-[#1E3A5F] to-[#0A192F] text-white flex items-center justify-between border-b border-white/10 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-white shrink-0 shadow-xs">
+                  <MessageSquare className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 id="exec-summary-title" className="text-sm font-bold flex items-center gap-2">
+                    <span>6:00 PM WhatsApp Executive Summary</span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-600/80 text-emerald-100 font-extrabold">
+                      Head Office Ready
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-slate-300">
+                    Compiled directly from live attendance, OT, materials, &amp; delay records
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsExecutiveModalOpen(false)}
+                aria-label="Close modal"
+                className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-4 sm:p-5 overflow-y-auto space-y-4 flex-1 text-slate-800 dark:text-slate-100">
+              {/* Optional Custom Phone Number Input */}
+              <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex-1">
+                  <label htmlFor="ho-phone" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    Send to Specific Manager / MD WhatsApp (Optional):
+                  </label>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Leave blank to open your WhatsApp chat selector
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 w-full sm:w-auto">
+                  <span className="text-xs font-mono font-bold text-slate-500">+91</span>
+                  <input
+                    id="ho-phone"
+                    type="tel"
+                    maxLength={10}
+                    value={customPhone}
+                    onChange={e => setCustomPhone(e.target.value.replace(/\D/g, ''))}
+                    placeholder="9431XXXXXX"
+                    className="w-full sm:w-36 px-2.5 py-1.5 text-xs font-mono font-bold bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+
+              {/* Formatted Text Preview */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Formatted Executive Message Preview:</span>
+                  </span>
+                  <span className="text-[10px] text-slate-500 font-mono">
+                    Markdown formatted for WhatsApp (*bold*, lists, emojis)
+                  </span>
+                </div>
+                <pre className="w-full max-h-72 p-3 text-xs font-mono leading-relaxed bg-slate-900 text-emerald-400 rounded-xl overflow-x-auto overflow-y-auto whitespace-pre-wrap select-all border border-slate-800 shadow-inner">
+                  {generateEndOfDayWhatsAppSummary({
+                    siteName: siteName || 'Barsoi',
+                    subgroupName: subgroupName || 'Madan',
+                    dateKey,
+                    selectedDay,
+                    monthKey,
+                    userName: userName || 'Site Incharge',
+                    userRole,
+                    workers: appState.workers,
+                    keyPersons: appState.keyPersons,
+                    attendance: appState.attendance,
+                    kpAttendance: appState.kpAttendance,
+                    dpr: appState.dpr
+                  })}
+                </pre>
+              </div>
+            </div>
+
+            {/* Modal Footer / 1-Tap Action Bar */}
+            <div className="px-5 py-3 bg-slate-50 dark:bg-slate-900/90 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-2.5 shrink-0">
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 text-center sm:text-left">
+                Directly opens WhatsApp Web or Mobile app with full report pre-filled.
+              </div>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const text = generateEndOfDayWhatsAppSummary({
+                      siteName: siteName || 'Barsoi',
+                      subgroupName: subgroupName || 'Madan',
+                      dateKey,
+                      selectedDay,
+                      monthKey,
+                      userName: userName || 'Site Incharge',
+                      userRole,
+                      workers: appState.workers,
+                      keyPersons: appState.keyPersons,
+                      attendance: appState.attendance,
+                      kpAttendance: appState.kpAttendance,
+                      dpr: appState.dpr
+                    });
+                    try {
+                      if (navigator?.clipboard?.writeText) {
+                        navigator.clipboard.writeText(text).catch(() => {
+                          const ta = document.createElement('textarea');
+                          ta.value = text;
+                          ta.style.position = 'fixed';
+                          ta.style.opacity = '0';
+                          document.body.appendChild(ta);
+                          ta.select();
+                          document.execCommand('copy');
+                          document.body.removeChild(ta);
+                        });
+                      } else {
+                        const ta = document.createElement('textarea');
+                        ta.value = text;
+                        ta.style.position = 'fixed';
+                        ta.style.opacity = '0';
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                      }
+                    } catch {
+                      // Silently continue
+                    }
+                    setCopiedSummary(true);
+                    showToast('Summary copied to clipboard!');
+                    setTimeout(() => setCopiedSummary(false), 2000);
+                  }}
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 cursor-pointer"
+                >
+                  {copiedSummary ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedSummary ? 'Copied!' : 'Copy Text'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const summaryText = generateEndOfDayWhatsAppSummary({
+                      siteName: siteName || 'Barsoi',
+                      subgroupName: subgroupName || 'Madan',
+                      dateKey,
+                      selectedDay,
+                      monthKey,
+                      userName: userName || 'Site Incharge',
+                      userRole,
+                      workers: appState.workers,
+                      keyPersons: appState.keyPersons,
+                      attendance: appState.attendance,
+                      kpAttendance: appState.kpAttendance,
+                      dpr: appState.dpr
+                    });
+                    const cleanPhone = customPhone.replace(/\D/g, '');
+                    const waUrl = cleanPhone
+                      ? `https://wa.me/${cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone}?text=${encodeURIComponent(summaryText)}`
+                      : `https://wa.me/?text=${encodeURIComponent(summaryText)}`;
+                    window.open(waUrl, '_blank', 'noopener');
+                    showToast('Opening WhatsApp with Executive Summary...');
+                  }}
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-colors cursor-pointer"
+                >
+                  <MessageSquare className="w-4 h-4 text-emerald-100" />
+                  <span>1-Tap Send on WhatsApp</span>
+                  <ExternalLink className="w-3 h-3 opacity-75" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

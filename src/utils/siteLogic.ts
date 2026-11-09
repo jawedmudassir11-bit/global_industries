@@ -46,6 +46,9 @@ export interface DPRRecord {
   rainStart: string;
   rainEnd: string;
   workStop: string;
+  downtimeReason?: string;
+  downtimeHours?: string | number;
+  downtimeNotes?: string;
   matReceived: MaterialEntry[];
   matConsumed: MaterialEntry[];
   photos: string[];
@@ -507,5 +510,168 @@ export function isDayAutoLockedForRole(
     return true;
   }
   return false;
+}
+
+/**
+ * 1-Tap End-of-Day 6:00 PM WhatsApp Executive Summary generator for Head Office.
+ * Formats: Total Workforce Present, Trade Breakdown, Today's Overtime & Advances,
+ * Weather & Downtime Delays, and Materials Received (Challan log).
+ */
+export function generateEndOfDayWhatsAppSummary(params: {
+  siteName: string;
+  subgroupName: string;
+  dateKey: string;
+  selectedDay: number;
+  monthKey: string;
+  userName?: string;
+  userRole?: string;
+  workers: WorkerProfile[];
+  keyPersons?: KeyPersonProfile[];
+  attendance: Record<string, Record<string, Record<number, AttendanceRecord>>>;
+  kpAttendance?: Record<string, Record<string, Record<number, { duty: number | null }>>>;
+  dpr: Record<string, DPRRecord>;
+}): string {
+  const {
+    siteName,
+    subgroupName,
+    dateKey,
+    selectedDay,
+    monthKey,
+    userName = 'Site Incharge',
+    userRole = 'Supervisor',
+    workers,
+    keyPersons = [],
+    attendance,
+    kpAttendance = {},
+    dpr
+  } = params;
+
+  const monthAtt = attendance[monthKey] || {};
+  let totalPresent = 0;
+  let fullDays = 0;
+  let halfDays = 0;
+  let absentCount = 0;
+  let unmarkedCount = 0;
+  let totalOT = 0;
+  let workersWithOT = 0;
+  let totalAdvance = 0;
+
+  const tradeBreakdown: Record<string, { present: number; total: number }> = {};
+
+  workers.forEach(w => {
+    const trade = (w.desig || 'Unspecified').trim();
+    if (!tradeBreakdown[trade]) {
+      tradeBreakdown[trade] = { present: 0, total: 0 };
+    }
+    tradeBreakdown[trade].total++;
+
+    const rec = monthAtt[w.id]?.[selectedDay];
+    const dutyVal = parseDutyInput(rec?.duty);
+
+    if (dutyVal === 1) {
+      totalPresent++;
+      fullDays++;
+      tradeBreakdown[trade].present++;
+    } else if (dutyVal === 0.5) {
+      totalPresent++;
+      halfDays++;
+      tradeBreakdown[trade].present += 0.5;
+    } else if (dutyVal === 0) {
+      absentCount++;
+    } else {
+      unmarkedCount++;
+    }
+
+    if (rec?.ot && Number(rec.ot) > 0) {
+      totalOT += Number(rec.ot);
+      workersWithOT++;
+    }
+    if (rec?.adv && Number(rec.adv) > 0) {
+      totalAdvance += Number(rec.adv);
+    }
+  });
+
+  let kpPresent = 0;
+  keyPersons.forEach(kp => {
+    const kDuty = kpAttendance[monthKey]?.[kp.id]?.[selectedDay]?.duty;
+    if (parseDutyInput(kDuty) !== null && (parseDutyInput(kDuty) || 0) > 0) {
+      kpPresent++;
+    }
+  });
+
+  const dprRec = dpr[dateKey];
+  const weather = dprRec?.weather || '☀️ Sunny / Clear';
+  const downtime = dprRec?.downtimeReason;
+  const downtimeHrs = dprRec?.downtimeHours;
+  const downtimeNotes = dprRec?.downtimeNotes;
+
+  const percent = workers.length > 0 ? Math.round((totalPresent / workers.length) * 100) : 0;
+
+  let text = `🏗️ *GLOBAL INDUSTRIES — 6:00 PM DAILY EXECUTIVE SITE SUMMARY*\n`;
+  text += `🏢 *Site:* ${siteName} ➔ ${subgroupName}\n`;
+  text += `📅 *Date:* ${dateKey}\n`;
+  text += `👤 *Prepared By:* ${userName} (${userRole.toUpperCase()})\n`;
+  text += `━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+
+  text += `👥 *LABOUR WORKFORCE (हाज़िरी)*\n`;
+  text += `• Registered Strength: ${workers.length} Workers\n`;
+  text += `• Total Present: *${totalPresent}* (${percent}%)\n`;
+  text += `• Full Day (1.0): ${fullDays} | Half Day (0.5): ${halfDays}\n`;
+  text += `• Absent (0.0): ${absentCount}${unmarkedCount > 0 ? ` | Unmarked: ${unmarkedCount}` : ''}\n`;
+  if (keyPersons.length > 0) {
+    text += `• Key Officials On Site: ${kpPresent} of ${keyPersons.length}\n`;
+  }
+
+  text += `\n🔨 *TRADE BREAKDOWN (उपस्थिति)*\n`;
+  const tradeEntries = Object.entries(tradeBreakdown);
+  if (tradeEntries.length === 0) {
+    text += `• None registered\n`;
+  } else {
+    tradeEntries.forEach(([trade, stats]) => {
+      text += `• ${trade}: ${stats.present} Present (of ${stats.total})\n`;
+    });
+  }
+
+  text += `\n⏱️ *OVERTIME & CASH ADVANCES TODAY*\n`;
+  text += `• Total Overtime Clocked: *${totalOT} Hrs* (${workersWithOT} workers)\n`;
+  text += `• Site Cash Advances Paid: ₹${totalAdvance.toLocaleString('en-IN')}\n`;
+
+  text += `\n⛈️ *WEATHER & DOWNTIME TRACKER*\n`;
+  text += `• Weather Condition: ${weather}\n`;
+  if (downtime && downtime !== 'None' && downtime !== 'No Downtime') {
+    text += `• ⚠️ *Downtime Delay:* ${downtime}${downtimeHrs ? ` (${downtimeHrs} hrs lost)` : ''}\n`;
+    if (downtimeNotes) text += `• *Downtime Reason / Impact:* ${downtimeNotes}\n`;
+  } else {
+    text += `• Downtime Delay: None (Continuous full-shift work)\n`;
+  }
+
+  text += `\n📦 *MATERIALS RECEIVED TODAY (CHALANI LOG)*\n`;
+  if (!dprRec?.matReceived || dprRec.matReceived.length === 0) {
+    text += `• None received today\n`;
+  } else {
+    dprRec.matReceived.forEach(m => {
+      const meta = [m.challan ? `Challan: ${m.challan}` : '', m.supplier ? `Party: ${m.supplier}` : '']
+        .filter(Boolean)
+        .join(', ');
+      text += `• ${m.item}: ${m.qty} ${m.unit}${meta ? ` (${meta})` : ''}\n`;
+    });
+  }
+
+  text += `\n🧱 *MATERIALS CONSUMED TODAY*\n`;
+  if (!dprRec?.matConsumed || dprRec.matConsumed.length === 0) {
+    text += `• None recorded\n`;
+  } else {
+    dprRec.matConsumed.forEach(m => {
+      text += `• ${m.item}: ${m.qty} ${m.unit}\n`;
+    });
+  }
+
+  text += `\n📝 *DAILY WORK ALLOCATION & TASKS*\n`;
+  text += `${dprRec?.work?.trim() || 'Standard site operations and construction activities.'}\n`;
+
+  text += `━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+  text += `_Dispatched via Global Industries Portal_`;
+
+  return text;
 }
 

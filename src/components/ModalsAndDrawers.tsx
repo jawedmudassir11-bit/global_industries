@@ -1469,10 +1469,10 @@ export const UiImprovementGuideModal: React.FC<UiImprovementGuideModalProps> = (
           <div className="p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 space-y-1.5">
             <div className="font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              4. Zero Changes to Firebase or PINs
+              4. Zero Changes to Firebase or Security
             </div>
             <p className="text-emerald-800 dark:text-emerald-300/90 leading-relaxed">
-              Preserved <code>g12343</code> (Primary RTDB), <code>global-industries-backup</code> (Backup RTDB & Storage), all database paths, and exact PIN codes (<strong>9431</strong> Admin, <strong>1820</strong> Incharge, <strong>5566</strong> Supervisor, <strong>6767</strong> Easter Egg).
+              Preserved <code>g12343</code> (Primary RTDB), <code>global-industries-backup</code> (Backup RTDB & Storage), all database paths, and secure role-based authorization.
             </p>
           </div>
         </div>

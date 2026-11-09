@@ -719,7 +719,6 @@ interface ProfileAnalyticsDrawerProps {
   onToggleDarkMode: () => void;
   onOpenPinModal: () => void;
   onLockRole: () => void;
-  onOpenGuideModal: () => void;
   onForceSync: () => void;
   sites: SiteNode[];
   appState: AppState;
@@ -742,7 +741,6 @@ export const ProfileAnalyticsDrawer: React.FC<ProfileAnalyticsDrawerProps> = ({
   onToggleDarkMode,
   onOpenPinModal,
   onLockRole,
-  onOpenGuideModal,
   onForceSync,
   sites,
   appState,
@@ -1036,22 +1034,10 @@ export const ProfileAnalyticsDrawer: React.FC<ProfileAnalyticsDrawerProps> = ({
               <button
                 type="button"
                 onClick={onForceSync}
-                className="px-2.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] font-extrabold flex items-center justify-center gap-1.5"
+                className="col-span-2 px-2.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] font-extrabold flex items-center justify-center gap-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
               >
                 <RefreshCw className="w-3.5 h-3.5 text-blue-600" />
-                <span>Sync Cloud</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  onOpenGuideModal();
-                }}
-                className="px-2.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] font-extrabold flex items-center justify-center gap-1.5"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                <span>UI Guide</span>
+                <span>Force Cloud Sync</span>
               </button>
             </div>
           </div>

@@ -10,7 +10,8 @@ import {
   calculateSiteDashboardStats,
   calculateActiveStockMap,
   sanitizeState,
-  isDayAutoLockedForRole
+  isDayAutoLockedForRole,
+  generateEndOfDayWhatsAppSummary
 } from './siteLogic';
 
 test('Firebase configuration constants remain strictly unchanged', () => {
@@ -119,5 +120,51 @@ test('Attendance auto-lock locks past >48h days for Supervisor and Site Incharge
   // Admin (9431) is NEVER locked and can change anything at any time
   assert.equal(isDayAutoLockedForRole('admin', 1, '11-2026', 7, '11-2026', true), false);
   assert.equal(isDayAutoLockedForRole('admin', 1, '10-2026', 7, '11-2026', true), false);
+});
+
+test('1-Tap 6:00 PM WhatsApp Executive Summary compiles workforce, trade breakdown, OT, downtime, and materials received', () => {
+  const summary = generateEndOfDayWhatsAppSummary({
+    siteName: 'Barsoi',
+    subgroupName: 'Madan',
+    dateKey: '07-11-2026',
+    selectedDay: 7,
+    monthKey: '11-2026',
+    userName: 'Mudassir',
+    userRole: 'supervisor',
+    workers: [
+      { id: 'w1', name: 'Ramesh', desig: 'Head Mason', rate: 800 },
+      { id: 'w2', name: 'Sanjay', desig: 'Bar Bender', rate: 700 }
+    ],
+    attendance: {
+      '11-2026': {
+        w1: { 7: { duty: 1, ot: 2, adv: 500 } },
+        w2: { 7: { duty: 0.5, ot: 0, adv: 0 } }
+      }
+    },
+    dpr: {
+      '07-11-2026': {
+        work: 'Casting pile cap grid A',
+        weather: '⛈️ Heavy Rain',
+        rainStart: '14:00',
+        rainEnd: '16:30',
+        workStop: 'Yes',
+        downtimeReason: 'Rain Stopped Work',
+        downtimeHours: '2.5',
+        downtimeNotes: 'Pour stopped due to sudden downpour',
+        matReceived: [{ item: 'Ultratech Cement', qty: '150', unit: 'Bag', challan: 'CH-991', supplier: 'Begusarai Traders' }],
+        matConsumed: [{ item: 'Ultratech Cement', qty: '80', unit: 'Bag' }],
+        photos: []
+      }
+    }
+  });
+
+  assert.ok(summary.includes('6:00 PM DAILY EXECUTIVE SITE SUMMARY'));
+  assert.ok(summary.includes('Barsoi ➔ Madan'));
+  assert.ok(summary.includes('Total Present: *2*'));
+  assert.ok(summary.includes('Head Mason'));
+  assert.ok(summary.includes('Overtime Clocked: *2 Hrs*'));
+  assert.ok(summary.includes('Cash Advances Paid: ₹500'));
+  assert.ok(summary.includes('Rain Stopped Work (2.5 hrs lost)'));
+  assert.ok(summary.includes('Ultratech Cement: 150 Bag'));
 });
 

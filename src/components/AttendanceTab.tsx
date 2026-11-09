@@ -8,7 +8,8 @@ import {
   Calendar,
   Award,
   Edit2,
-  Trash2
+  Trash2,
+  X
 } from 'lucide-react';
 import {
   AppState,
@@ -65,6 +66,23 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'P' | 'H' | 'A' | 'U'>('ALL');
   const [tradeFilter, setTradeFilter] = useState<string>('ALL');
+  const searchInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  // Keyboard shortcut: Press '/' or 'Ctrl/Cmd+K' to quickly focus the persistent search bar
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        (e.key === '/' || ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k')) &&
+        document.activeElement?.tagName !== 'INPUT' &&
+        document.activeElement?.tagName !== 'TEXTAREA'
+      ) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const canManage = userRole === 'admin' || userRole === 'incharge' || userRole === 'supervisor';
   const monthAtt = appState.attendance[monthKey] || {};
@@ -107,7 +125,8 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({
     const matchesSearch =
       !q ||
       w.name.toLowerCase().includes(q) ||
-      (w.desig && w.desig.toLowerCase().includes(q));
+      (w.desig && w.desig.toLowerCase().includes(q)) ||
+      (w.phone && w.phone.toLowerCase().includes(q));
     if (!matchesSearch) return false;
     if (tradeFilter !== 'ALL' && (w.desig || 'Unspecified').trim() !== tradeFilter) return false;
     if (statusFilter !== 'ALL') {
@@ -118,6 +137,16 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({
       if (statusFilter === 'U' && dVal !== null) return false;
     }
     return true;
+  });
+
+  const filteredOfficials = appState.keyPersons.filter(kp => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return true;
+    return (
+      kp.name.toLowerCase().includes(q) ||
+      (kp.desig && kp.desig.toLowerCase().includes(q)) ||
+      (kp.phone && kp.phone.toLowerCase().includes(q))
+    );
   });
 
   return (
@@ -195,24 +224,6 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({
         </div>
       </div>
 
-      {/* Attendance Auto-Lock Banner for Supervisors & Site Incharge (Admin never sees this and can edit anything at any time) */}
-      {isDayAutoLocked && userRole !== 'admin' && subView === 'workers' && (
-        <div className="px-4 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Lock className="w-4 h-4 text-amber-600 shrink-0" />
-            <span>
-              <strong>Attendance Auto-Locked (&gt;48h Old):</strong> Past records are locked for <strong>Supervisors (5566)</strong> and <strong>Site Incharge (1820)</strong>. Only <strong>Admin (9431)</strong> can modify past attendance at any time.
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={onRequireAuth}
-            className="px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shrink-0 cursor-pointer"
-          >
-            Admin Unlock
-          </button>
-        </div>
-      )}
 
       {isMasterRollup && subView === 'workers' && (
         <div className="px-4 py-3 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 text-xs text-blue-900 dark:text-blue-200 flex items-center justify-between gap-2">
@@ -224,75 +235,107 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({
 
       {subView === 'workers' ? (
         <>
-          {/* Search & Compact Filter Bar */}
-          <div className="flex flex-col md:flex-row gap-2.5">
-            <div className="relative flex-1">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search worker name or trade..."
-                aria-label="Search worker name or trade"
-                className="w-full pl-10 pr-4 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:border-blue-600 dark:focus:border-blue-500 text-slate-900 dark:text-slate-100"
-              />
+          {/* PERSISTENT STICKY SEARCH & REAL-TIME FILTER BAR */}
+          <div className="sticky top-0 z-20 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-md pt-2 pb-2.5 -mx-1 px-1 border-b border-slate-200/80 dark:border-slate-800/80 space-y-2">
+            <div className="flex flex-col md:flex-row gap-2.5">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder="Search worker by name, trade or phone... (Press '/' to focus)"
+                  aria-label="Search worker name or trade"
+                  className="w-full pl-10 pr-24 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-slate-900 dark:text-slate-100 shadow-2xs"
+                />
+                <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchQuery('');
+                        searchInputRef.current?.focus();
+                      }}
+                      aria-label="Clear search query"
+                      className="p-1 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                      title="Clear search"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                  <span className="hidden sm:inline-block text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700">
+                    /
+                  </span>
+                </div>
+              </div>
+
+              {/* Segmented Status Filter */}
+              <div className="flex items-center gap-1 overflow-x-auto pb-1 md:pb-0 no-scrollbar">
+                {[
+                  { k: 'ALL', l: `All (${appState.workers.length})` },
+                  { k: 'P', l: `Present (${cntP})` },
+                  { k: 'H', l: `Half (${cntH})` },
+                  { k: 'A', l: `Absent (${cntA})` },
+                  { k: 'U', l: `Unmarked (${cntU})` }
+                ].map(item => (
+                  <button
+                    key={item.k}
+                    type="button"
+                    onClick={() => setStatusFilter(item.k as any)}
+                    className={`px-3 py-2 text-xs font-semibold rounded-lg border transition-colors whitespace-nowrap shrink-0 min-h-[40px] cursor-pointer ${
+                      statusFilter === item.k
+                        ? 'bg-slate-900 dark:bg-blue-600 text-white border-slate-900 dark:border-blue-600'
+                        : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    {item.l}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Segmented Status Filter */}
-            <div className="flex items-center gap-1 overflow-x-auto pb-1 md:pb-0 no-scrollbar">
-              {[
-                { k: 'ALL', l: `All (${appState.workers.length})` },
-                { k: 'P', l: `Present (${cntP})` },
-                { k: 'H', l: `Half (${cntH})` },
-                { k: 'A', l: `Absent (${cntA})` },
-                { k: 'U', l: `Unmarked (${cntU})` }
-              ].map(item => (
-                <button
-                  key={item.k}
-                  type="button"
-                  onClick={() => setStatusFilter(item.k as any)}
-                  className={`px-3 py-2 text-xs font-semibold rounded-lg border transition-colors whitespace-nowrap shrink-0 min-h-[40px] cursor-pointer ${
-                    statusFilter === item.k
-                      ? 'bg-slate-900 dark:bg-blue-600 text-white border-slate-900 dark:border-blue-600'
-                      : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  {item.l}
-                </button>
-              ))}
+            {/* Trade Filter Row & Live Results Counter */}
+            <div className="flex items-center justify-between gap-2 overflow-x-auto pb-0.5 no-scrollbar">
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                {Object.keys(tradeCounts).length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setTradeFilter('ALL')}
+                      className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                        tradeFilter === 'ALL'
+                          ? 'bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 font-semibold'
+                          : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      All Trades
+                    </button>
+                    {Object.entries(tradeCounts).map(([tr, cnt]) => (
+                      <button
+                        key={tr}
+                        type="button"
+                        onClick={() => setTradeFilter(tr)}
+                        className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                          tradeFilter === tr
+                            ? 'bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 font-semibold'
+                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        }`}
+                      >
+                        {tr} · {cnt}
+                      </button>
+                    ))}
+                  </>
+                )}
+              </div>
+
+              {(searchQuery || tradeFilter !== 'ALL' || statusFilter !== 'ALL') && (
+                <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap shrink-0">
+                  Showing {filteredWorkers.length} of {appState.workers.length}
+                </div>
+              )}
             </div>
           </div>
-
-          {/* Trade Filter Row (only if multiple trades exist) */}
-          {Object.keys(tradeCounts).length > 1 && (
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-              <button
-                type="button"
-                onClick={() => setTradeFilter('ALL')}
-                className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                  tradeFilter === 'ALL'
-                    ? 'bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 font-semibold'
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-                }`}
-              >
-                All Trades
-              </button>
-              {Object.entries(tradeCounts).map(([tr, cnt]) => (
-                <button
-                  key={tr}
-                  type="button"
-                  onClick={() => setTradeFilter(tr)}
-                  className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                    tradeFilter === tr
-                      ? 'bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 font-semibold'
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-                  }`}
-                >
-                  {tr} · {cnt}
-                </button>
-              ))}
-            </div>
-          )}
 
           {/* Worker List Grid - Compact & Mobile Ergonomic */}
           {filteredWorkers.length === 0 ? (
@@ -300,8 +343,18 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({
               <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
                 {appState.workers.length === 0
                   ? 'No workers registered in this group yet.'
-                  : 'No workers match the active search or filter.'}
+                  : `No workers match "${searchQuery || tradeFilter || statusFilter}".`}
               </p>
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  <span>Clear Search</span>
+                </button>
+              )}
               {canManage && !isMasterRollup && appState.workers.length === 0 && (
                 <button
                   type="button"
@@ -468,15 +521,60 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({
       ) : (
         /* OFFICIALS & KEY PERSONNEL SUB-VIEW */
         <div className="space-y-3">
-          {appState.keyPersons.length === 0 ? (
+          {/* Persistent Search Bar for Officials */}
+          <div className="sticky top-0 z-20 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-md pt-2 pb-2.5 -mx-1 px-1 border-b border-slate-200/80 dark:border-slate-800/80">
+            <div className="relative">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search official by name, role or phone..."
+                aria-label="Search official name or role"
+                className="w-full pl-10 pr-24 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-900 dark:text-slate-100 shadow-2xs"
+              />
+              <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    aria-label="Clear search query"
+                    className="p-1 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    title="Clear search"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            </div>
+            {searchQuery && (
+              <div className="mt-1.5 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                Showing {filteredOfficials.length} of {appState.keyPersons.length} officials
+              </div>
+            )}
+          </div>
+
+          {filteredOfficials.length === 0 ? (
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-10 text-center">
               <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                No key personnel or officials registered yet.
+                {appState.keyPersons.length === 0
+                  ? 'No key personnel or officials registered yet.'
+                  : `No officials match "${searchQuery}".`}
               </p>
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  <span>Clear Search</span>
+                </button>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-              {appState.keyPersons.map(kp => {
+              {filteredOfficials.map(kp => {
                 const rec = getKpRec(kp.id, selectedDay);
                 const dutyVal = parseDutyInput(rec.duty);
                 const locked = userRole === 'viewer';
